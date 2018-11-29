@@ -1,31 +1,29 @@
 import mysql.connector
-#import config
+import config
 
 def main():
-  #  try: 
-        # connection info - waiting for information about it from bowers
+	try: 
+        	usr = config.mysql['user']
+        	pwd = config.mysql['password']
+        	hst = config.mysql['host']
+        	dab = 'TextbookSellingDB'
 		
-        #usr = config.mysql['user']
-        #pwd = config.mysql['password']
-        #hst = config.mysql['host']
-        #dab = usr + 'DB'
+	# create a connection
+		con = mysql.connector.connect(user=usr,password=pwd, host=hst, database=dab)
+										  
+		rs = con.cursor()
 		
-		# create a connection
-        #con = mysql.connector.connect(user=usr,password=pwd, host=hst, database=dab)
-									  
-		#rs = con.cursor()
+		print("Are you:")
+		print("  1. Seller")
+		print("  2. Buyer")
+		userInput = input("Enter your selection: ")
+		if userInput == 1:
+			sellerOption()
+		elif userInput == 2:
+			buyerOption()
 		
-	print("Are you:")
-	print("  1. Seller")
-	print("  2. Buyer")
-	userInput = input("Enter your selection: ")
-	if userInput == 1:
-		sellerOption()
-	elif userInput == 2:
-		buyerOption()
-		
-	#except mysql.connector.Error as err:
-    #    print(err)
+	except mysql.connector.Error as err:
+		print(err)
 
 	
 def buyerOption():
