@@ -5,11 +5,12 @@ import config
 
 def main():
 	try: 
-        	usr = config.mysql['user']
-        	pwd = config.mysql['password']
-        	hst = config.mysql['host']
-        	dab = 'TextbookSellingDB'
+		usr = config.mysql['user']
+		pwd = config.mysql['password']
+		hst = config.mysql['host']
+		dab = 'TextbookSellingDB'
 		
+		#create connection
 		con = mysql.connector.connect(user=usr,password=pwd, host=hst, database=dab)
 										  
 		rs = con.cursor()
@@ -36,8 +37,9 @@ def buyerMenuDisplay(con, rs):
 	print("Your Menu:")
 	print("1.	Search Textbooks")
 	print("2.	Search Classes")
-	print("3.	Search Sellers")
-	print("4.	exit")
+	print("3.   Search Class Textbooks")
+	print("5.	Search Sellers")
+	print("5.	Exit")
 	menuChoice = input("Enter your choice: ")
 	
 	if menuChoice == 1:
@@ -45,8 +47,10 @@ def buyerMenuDisplay(con, rs):
 	elif menuChoice == 2:
 		searchClasses(con, rs)
 	elif menuChoice == 3:
-		searchSellers(con, rs)
+		searchClassTextbooks(con, rs)
 	elif menuChoice == 4:
+		searchSellers(con, rs)
+	elif menuChoice == 5:
 		exit()
 	else:
 		print
@@ -57,46 +61,66 @@ def searchTextbooks(con, rs):
 	print
 	print("Search Textbooks")
 	print("Please enter the following information")
-	courseID = input("Enter the course ID (CRN): ")
-	textbookTitle = raw_input("Enter the textbook title: ")
-	ISBN = input("Enter the ISBN Number (optional): ")
-	author = raw_input("Enter the author (optional): ")
-	edition = input("Enter the addition (optional): ")	
+	ISBN = input("Enter the ISBN 13 number: ")
+	#title = raw_input("Enter the textbook title: ")
+	#author = raw_input("Enter the author: ")
+	#edition = input("Enter the edition: ")
+	#publisher = input("Enter the publisher: ")
+	#year = input("Enter the year published: ")
 	
-	#HERE
-	searchTxt = ('SELECT T.title, T.author, T.ISBN, T.edition, L.price '
-		  'FROM CourseTextbook CT, Textbook T, Listing L '
-		 'WHERE CT.textbook_id = T.textbook_id and L.textbook_id = T.textbook_id ' 
-		        'and CT.CRN = %s and T.title = %s ')
+	searchTxt = ('SELECT t.title, t.author, t.ISBN, t.edition, t.price '
+				 'FROM Textbook t '
+				 'WHERE t.ISBN = %s')
 	print
-	rs.execute(searchTxt,(courseID,textbookTitle))
-	con.commit()
+	rs.execute(searchTxt,(ISBN,))
 	print
+	
 	for (a,b,c,d,e) in rs:
-		result = '{}, {}, {,} {}, ${}'.format(a,b,c,d,e)
+		result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(a,b,c,d,e)
 		print(result)
 	print
 	
 def searchClasses(con, rs):
 	print
 	print("Search class")
-	userClass = input("Course id (CRN): ")
-	courseTitle = raw_input("Course title (optional): ")
-	instructor = raw_input("Instructor (optional): ")
+	crn = raw_input("CRN: ")
+	#dept = raw_input("Department: ")
+	#course_num = raw_input("Course Number: ")
+	#course_sec = raw_input("Course Section: ")
+	#instructor = raw_input("Instructor: ")
+	#term = raw_input("Term: ")
+	#course_year = raw_input("Year: ")
 	print
 	
-	#HERE
-	searchC = ('SELECT CT.CRN, C.instructor, T.title, T.ISBN '
-	            'FROM CourseTextbook CT, Course C, Textbook T '
-				'WHERE C.CRN = %s and CT.CRN = C.CRN and T.textbook_id = CT.textbook_id ')
-	rs.execute(searchC, userClass)
-	con.commit()
+	searchC = ('SELECT c.CRN, c.instructor, c.department, c.course_number, c.course_section, c.term, c.course_year '
+	           'FROM Course c '
+			   'WHERE c.CRN = %s')
+	rs.execute(searchC, (crn,))
+	
 	print
-	for(a,b,c,d) in rs:
-		result = '{}, {}, {}, {}'.format(a,b,c,d)
+	for(a,b,c,d,e,f,g) in rs:
+		result = 'CRN: {}, {}, {} {}-{}, {} {}'.format(a,b,c,d,e,f,g)
 		print(result)
 	print
+
+def searchClassTextbooks(con, rs):
+	print
+	print("Search Class Textbooks")
+	crn = input("CRN: ")
+	print
 	
+	searchC = ('SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN '
+	           'FROM CourseTextbook ct, Course c, Textbook t '
+			   'WHERE c.CRN = %s '
+			   'AND ct.CRN = c.CRN '
+			   'AND t.ISBN = ct.ISBN ')
+	rs.execute(searchC, (crn,))
+	
+	print
+	for(a,b,c,d,e,f,g) in rs:
+		result = '(CRN: {}, {} {}-{}, {}) Required Text: "{}", ISBN: {}'.format(a,b,c,d,e,f,g)
+		print(result)
+	print
 	
 def searchSellers(con, rs):
 	print
@@ -187,7 +211,7 @@ def requestTextbook(con, rs):
 	sellerReq = raw_input("Enter the seller you wish to request this book from: ")
 	
 	#add a new row in the request table
-	insertReq = 'INSERT INTO Request(request_id, date_requested, requested_state, listing_id, seller_id, buyer_id) VALUES(%s, %s, %s, %s, %s, %s)
+	#insertReq = 'INSERT INTO Request(request_id, date_requested, requested_state, listing_id, seller_id, buyer_id) VALUES(%s, %s, %s, %s, %s, %s)
 	#how do we auto increment with sql again? we should use it for request_id
 	#stopped here
 	#rs.execute(insertReq,(autoIncrementThing, '2018-04-23', 'pending', )
@@ -210,4 +234,3 @@ def sellerOption():
 if __name__ == '__main__':
 	main()
 	
-
