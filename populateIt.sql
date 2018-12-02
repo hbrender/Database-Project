@@ -106,3 +106,7 @@ INSERT INTO Course VALUES
 	(21402, 'CHEM', '104', '07', 'Bill Nye', 'Spring', 2019),
 	(12345, 'COMM', '425', '03', 'Allison Davis', 'Spring', 2019),
 	(13562, 'NURS', '372', '01', 'Erica Fisher', 'Spring', 2019);
+	
+INSERT INTO CourseTextbook VALUES
+	(1,11485),
+	(1,11014);
