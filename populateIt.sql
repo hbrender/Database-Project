@@ -21,49 +21,49 @@ CREATE TABLE Seller(
 ) engine = InnoDB;
 
 CREATE TABLE Textbook(
-	textbook_id  	INT NOT NULL,
-	ISBN		 	VARCHAR(13),
+	ISBN		 	VARCHAR(13) NOT NULL,
 	title		 	VARCHAR(40),
 	author		 	VARCHAR(30),
 	edition		 	INT,
 	publisher	 	VARCHAR(40),
 	year_published 	YEAR,
-	PRIMARY KEY(textbook_id)
-	) engine = InnoDB;
+	price			DECIMAL(5,2),
+	PRIMARY KEY(ISBN)
+) engine = InnoDB;
 
 CREATE TABLE Course(
 	CRN				INT(5) NOT NULL,
 	department		VARCHAR(4),
-	course_number	INT(4) NOT NULL,
-	course_section	INT(2) NOT NULL,
+	course_number	VARCHAR(4) NOT NULL,
+	course_section	VARCHAR(2) NOT NULL,
 	instructor		VARCHAR(40),
 	term			ENUM('Fall', 'Spring', 'Summer'),
 	course_year		YEAR,
 	PRIMARY KEY(CRN)
-	) engine = InnoDB;
+) engine = InnoDB;
 
 CREATE TABLE CourseTextbook(
-	textbook_id		INT NOT NULL,
-	CRN				INT NOT NULL,
-	PRIMARY KEY (textbook_id, CRN),
-	FOREIGN KEY (textbook_id) REFERENCES Textbook(textbook_id),
+	ISBN		VARCHAR(13) NOT NULL,
+	CRN			INT(5) NOT NULL,
+	PRIMARY KEY (ISBN, CRN),
+	FOREIGN KEY (ISBN) REFERENCES Textbook(ISBN),
 	FOREIGN KEY (CRN) REFERENCES Course(CRN)
-	) engine = InnoDB;
+) engine = InnoDB;
 
 CREATE TABLE Listing(
 	listing_id	    INT NOT NULL,
 	seller_id		INT NOT NULL,
-	textbook_id		INT NOT NULL,
+	ISBN			VARCHAR(13) NOT NULL,
 	CRN				INT NOT NULL,
 	date_listed	    DATE,              -- YYYY-MM-DD
 	price		    INT NOT NULL,
 	book_condition	ENUM('Poor', 'Fair', 'Good', 'Very Good', 'Like New'),
 	listing_state 	ENUM('Public', 'Hidden'),
 	PRIMARY KEY (listing_id),
-	FOREIGN KEY (textbook_id) REFERENCES Textbook(textbook_id),
+	FOREIGN KEY (ISBN) REFERENCES Textbook(ISBN),
 	FOREIGN KEY (CRN) REFERENCES Course(CRN),
 	FOREIGN KEY (seller_id) REFERENCES Seller(seller_id)
-	) engine = InnoDB;
+) engine = InnoDB;
 
 CREATE TABLE Request(
 	request_id	    INT NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE Request(
 	FOREIGN KEY (listing_id) REFERENCES Listing(listing_id),
 	FOREIGN KEY (seller_id) REFERENCES Seller(seller_id),
 	FOREIGN KEY (buyer_id)	REFERENCES Buyer(buyer_id)
-	) engine=InnoDB;
+) engine=InnoDB;
 
 
 INSERT INTO Buyer VALUES
@@ -94,11 +94,11 @@ INSERT INTO Seller VALUES
 	(5,'Scott Howlett','showlett@zagmail.gonzaga.edu');
 
 INSERT INTO Textbook VALUES
-	(1, '9781234567891', 'Computer Hardware', 'Greg Computer', 2, 'Jacobs Publishing Inc.', 2016),
-	(2, '9781469894201', 'Basics of Nursing', 'John Patrick', 11, 'Dolphin Press', 2004),
-	(3, '9780471121206', 'Chemisty: Concepts and Problems', 'Richard Post', 2, 'Wiley', 1996),
-	(4, '9781118063330', 'Operating System Concepts', 'Abraham Silvershatz', 9, 'Wiley', 2012),
-	(5, '9780073523323', 'Database System Concepts', 'Abraham Silvershatz', 6, 'McGraw-Hill Education', 2010);
+	('9781234567891', 'Computer Hardware', 'Greg Computer', 2, 'Jacobs Publishing Inc.', 2016, 157.00),
+	('9781469894201', 'Basics of Nursing', 'John Patrick', 11, 'Dolphin Press', 2004, 89.99),
+	('9780471121206', 'Chemisty: Concepts and Problems', 'Richard Post', 2, 'Wiley', 1996, 210.00),
+	('9781118063330', 'Operating System Concepts', 'Abraham Silvershatz', 9, 'Wiley', 2012, 74.99),
+	('9780073523323', 'Database System Concepts', 'Abraham Silvershatz', 6, 'McGraw-Hill Education', 2010, 40.00);
 
 INSERT INTO Course VALUES
 	(11485, 'CPSC', '321', '01', 'Shawn Bowers', 'Fall', 2018),
@@ -108,5 +108,23 @@ INSERT INTO Course VALUES
 	(13562, 'NURS', '372', '01', 'Erica Fisher', 'Spring', 2019);
 	
 INSERT INTO CourseTextbook VALUES
-	(1,11485),
-	(1,11014);
+	('9781234567891', 11014),
+	('9781118063330', 11014),
+	('9780471121206', 21402),
+	('9780073523323', 11485),
+	('9781469894201', 13562);
+
+/*	
+SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN
+FROM CourseTextbook ct, Course c, Textbook t
+WHERE c.CRN = 11014
+AND ct.CRN = c.CRN
+AND t.ISBN = ct.ISBN;
+
+SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN
+FROM CourseTextbook ct, Course c, Textbook t
+WHERE c.CRN = NULL
+AND c.department = 'CPSC'
+AND ct.CRN = c.CRN
+AND t.ISBN = ct.ISBN;
+*/
