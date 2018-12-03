@@ -29,7 +29,7 @@ def main():
 
 	
 def buyerOption(con, rs):
-	buyerID = input("Input your buyerID: ")
+	buyerID = input("Input your buyer ID: ")
 	buyerMenuDisplay(con, rs)
 	
 def buyerMenuDisplay(con, rs):
@@ -237,7 +237,7 @@ def sellerMenuDisplay(con, rs, sellerID):
     print
     print("Your Menu:")
     print("1. See my textbooks on sale")
-    print("2. Remove a textbook listing")
+    print("2. Hide a textbook listing")
     print("3. Add a textbook listing")
     print("4. See requests for textbooks")
     print("5. Exit")
@@ -245,8 +245,10 @@ def sellerMenuDisplay(con, rs, sellerID):
 
     if sellerMenuChoice == 1:
         seeTextbooksOnSale(con, rs, sellerID)
+        sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 2:
-        print(2)
+        hideTextbookListing(con, rs, sellerID)
+        sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 3:
         print(3)
     elif sellerMenuChoice == 4:
@@ -255,13 +257,14 @@ def sellerMenuDisplay(con, rs, sellerID):
         exit()
     else:
         print("\nPlease enter a viable option (1-5)")
-        sellerMenuDisplay(con, rs)
+        sellerMenuDisplay(con, rs, sellerID)
 
+# when a seller selects a '1' form the menu, they will be able to see their textbooks currently on sale
 def seeTextbooksOnSale(con,rs,sellerID):
     print("These are your textbooks on sale: ")
     query = '''SELECT t.title as title, t.ISBN as ISBN, t.author as author, l.date_listed as date_listed, l.price as price, l.book_condition as book_condition
             FROM Listing l JOIN Seller s USING (seller_id) JOIN Textbook t USING (ISBN)
-            WHERE seller_id = %s AND l.listing_state = 'Public'
+            WHERE seller_id = %s AND l.listing_state = 'Public';
             '''
     rs.execute(query, (sellerID,))
     
@@ -269,6 +272,31 @@ def seeTextbooksOnSale(con,rs,sellerID):
     for(title, ISBN, author, date_listed, price, book_condition) in rs:
         print '{}, {}, {}, {}, ${}, {}'.format(title, ISBN, author, date_listed, price, book_condition)
 
+# when  a seller selects '2' from the menu, they will be able to hide a listing from the public
+def hideTextbookListing(con,rs,sellerID):
+    print("Hide a Textbook Listing")
+    print("Here are your current public listings:")
+    query = '''SELECT listing_id, ISBN, CRN, date_listed, price, book_condition
+               FROM Listing l
+               WHERE l.seller_id = %s AND l.listing_state = 'Public';
+            '''
+    rs.execute(query, (sellerID,))
+    
+    # display all of the seller's current public listings
+    print("Listing No., ISBN, CRN, Date Listed, Price, Condition")
+    for(listing_id, ISBN, CRN, date_listed, price, book_condition) in rs:
+        print '{}, {}, {}, {}, {}, {}'.format(listing_id, ISBN, CRN, date_listed, price, book_condition)
+
+    # ask for the listing id they would like to hide
+    listing_id = input('Please enter the listing number you would like to hide: ')
+    update = '''UPDATE Listing
+                SET listing_state = 'Hidden'
+                WHERE seller_id = %s AND listing_id = %s
+             '''
+    rs.execute(update,(sellerID,listing_id))
+    #save the changes to the db
+    con.commit()
+    print("Your listings have been updated.")
 
 if __name__ == '__main__':
 	main()
