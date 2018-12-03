@@ -228,6 +228,7 @@ def requestTextbook(con, rs):
 #Below is seller options, above is buyer options
 #-------------------------------------------------------------------#
 
+# this function will get the seller id and call function to display seller menu
 def sellerOption(con, rs):
         sellerID = input("Please enter your seller ID: ")
         sellerMenuDisplay(con, rs, sellerID)
@@ -250,7 +251,7 @@ def sellerMenuDisplay(con, rs, sellerID):
         hideTextbookListing(con, rs, sellerID)
         sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 3:
-        print(3)
+        addTextbookListing(con, rs, sellerID)
     elif sellerMenuChoice == 4:
          print(4)
     elif sellerMenuChoice == 5:
@@ -298,6 +299,41 @@ def hideTextbookListing(con,rs,sellerID):
     con.commit()
     print("Your listings have been updated.")
 
+def addTextbookListing(con, rs,sellerID):
+    print("Add a textbook listing")
+    isbn = input("Please enter the ISBN of the textbook you would like to add: ")
+    #TO DO : VALIDATE ISBN 
+    crn = input("Please enter the CRN of the course: ")
+    #TO DO: validate the CRN
+    date_listed = input("Please enter the current date in the format YYYY-MM-DD: ")
+    #TO DO: validate the date
+    price = input("Please enter the price of the textbook: $")
+    print("Here are the options for the book condition: ")
+    print("1. Poor")
+    print("2. Fair")
+    print("3. Good")
+    print("4. Very Good")
+    print("5. Like New")
+    book_cond = ''
+    book_cond_num = input("Please enter (1-5) for the book's condition: ")
+    if book_cond_num == 1:
+        book_cond = 'Poor'
+    elif book_cond_num == 2:
+        book_cond = 'Fair'
+    elif book_cond_num == 3:
+        book_cond = 'Good'
+    elif book_cond_num == 4:
+        book_cond = 'Very Good'
+    elif book_cond_num == 5:
+        book_cond = 'Like New'
+    else:
+    #TO DO: ask for user input again if the number is invalid or just store as null
+        book_cond = ''
+    insert = ''' INSERT INTO Listing(seller_id,ISBN,CRN,date_listed,price,book_condition,listing_state)
+                 VALUES (%s,%s,%s,%s,%s,%s,%s)'''
+    rs.execute(insert,(sellerID,isbn,crn,date_listed,price,book_cond,'Public'))
+    con.commit()
+    print("You have added a listing!")
 if __name__ == '__main__':
 	main()
 	

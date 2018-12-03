@@ -51,7 +51,7 @@ CREATE TABLE CourseTextbook(
 ) engine = InnoDB;
 
 CREATE TABLE Listing(
-	listing_id	    INT NOT NULL,
+	listing_id	    INT NOT NULL AUTO_INCREMENT,
 	seller_id		INT NOT NULL,
 	ISBN			VARCHAR(13) NOT NULL,
 	CRN				INT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE Listing(
 ) engine = InnoDB;
 
 CREATE TABLE Request(
-	request_id	    INT NOT NULL,
+	request_id	    INT NOT NULL AUTO_INCREMENT,
 	date_requested  DATE,             -- YYYY-MM-DD
 	request_state	ENUM('Pending', 'Approved', 'Declined'),
 	listing_id	    INT NOT NULL,
