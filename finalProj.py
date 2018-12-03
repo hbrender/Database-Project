@@ -20,7 +20,7 @@ def main():
 		print("  2. Buyer")
 		userInput = input("Enter your selection: ")
 		if userInput == 1:
-			sellerOption()
+			sellerOption(con,rs)
 		elif userInput == 2:
 			buyerOption(con,rs)
 		
@@ -73,11 +73,13 @@ def searchTextbooks(con, rs):
 				 'WHERE t.ISBN = %s')
 	print
 	rs.execute(searchTxt,(ISBN,))
-	print
-	
-	for (a,b,c,d,e) in rs:
-		result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(a,b,c,d,e)
-		print(result)
+        row = rs.fetchone()
+        if row is not None:
+	    for (a,b,c,d,e) in rs:
+		    result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(a,b,c,d,e)
+		    print(result)
+        else:
+            print("There are no textbooks found that match ISBN {}".format(ISBN))
 	print
 	
 def searchClasses(con, rs):
@@ -226,9 +228,46 @@ def requestTextbook(con, rs):
 #Below is seller options, above is buyer options
 #-------------------------------------------------------------------#
 
-def sellerOption():
+def sellerOption(con, rs):
+        sellerID = input("Please enter your seller ID: ")
+        sellerMenuDisplay(con, rs, sellerID)
 	#start here on seller stuff, this is right when they enter 1 at the start
 	print
+def sellerMenuDisplay(con, rs, sellerID):
+    print
+    print("Your Menu:")
+    print("1. See my textbooks on sale")
+    print("2. Remove a textbook listing")
+    print("3. Add a textbook listing")
+    print("4. See requests for textbooks")
+    print("5. Exit")
+    sellerMenuChoice = input("Enter an option from the menu (1-5): ")
+
+    if sellerMenuChoice == 1:
+        seeTextbooksOnSale(con, rs, sellerID)
+    elif sellerMenuChoice == 2:
+        print(2)
+    elif sellerMenuChoice == 3:
+        print(3)
+    elif sellerMenuChoice == 4:
+         print(4)
+    elif sellerMenuChoice == 5:
+        exit()
+    else:
+        print("\nPlease enter a viable option (1-5)")
+        sellerMenuDisplay(con, rs)
+
+def seeTextbooksOnSale(con,rs,sellerID):
+    print("These are your textbooks on sale: ")
+    query = '''SELECT t.title as title, t.ISBN as ISBN, t.author as author, l.date_listed as date_listed, l.price as price, l.book_condition as book_condition
+            FROM Listing l JOIN Seller s USING (seller_id) JOIN Textbook t USING (ISBN)
+            WHERE seller_id = %s AND l.listing_state = 'Public'
+            '''
+    rs.execute(query, (sellerID,))
+    
+    print("Title, ISBN, Author, Date Listed, Price, Condition")
+    for(title, ISBN, author, date_listed, price, book_condition) in rs:
+        print '{}, {}, {}, {}, ${}, {}'.format(title, ISBN, author, date_listed, price, book_condition)
 
 
 if __name__ == '__main__':

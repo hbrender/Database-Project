@@ -56,7 +56,7 @@ CREATE TABLE Listing(
 	ISBN			VARCHAR(13) NOT NULL,
 	CRN				INT NOT NULL,
 	date_listed	    DATE,              -- YYYY-MM-DD
-	price		    INT NOT NULL,
+	price		    DECIMAL(5,2) NOT NULL,
 	book_condition	ENUM('Poor', 'Fair', 'Good', 'Very Good', 'Like New'),
 	listing_state 	ENUM('Public', 'Hidden'),
 	PRIMARY KEY (listing_id),
@@ -113,6 +113,10 @@ INSERT INTO CourseTextbook VALUES
 	('9780471121206', 21402),
 	('9780073523323', 11485),
 	('9781469894201', 13562);
+
+INSERT INTO Listing VALUES
+        (1,1,'9781118063330',11014,"2018-09-04",50.00,'Good','Public'),
+        (2,2,'9781118063330',11014,"2018-08-26",20.00,'Fair','Public');
 
 /*	
 SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN
