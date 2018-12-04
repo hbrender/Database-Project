@@ -5,19 +5,27 @@ DROP TABLE IF EXISTS Course;
 DROP TABLE IF EXISTS Textbook;
 DROP TABLE IF EXISTS Seller;
 DROP TABLE IF EXISTS Buyer;
+DROP TABLE IF EXISTS Users;
+
+CREATE TABLE Users(
+	username		VARCHAR(20) NOT NULL,
+	password		VARCHAR(10) NOT NULL,
+	name			VARCHAR(25),
+	PRIMARY KEY (username)
+) engine = InnoDB;
 
 CREATE TABLE Buyer(
-	buyer_id		INT NOT NULL,
-	name			VARCHAR(25),
-	email			VARCHAR(40),
-	PRIMARY KEY(buyer_id)
+	buyer_id		INT NOT NULL AUTO_INCREMENT,
+	username		VARCHAR(10) NOT NULL,
+	PRIMARY KEY(buyer_id, username),
+	FOREIGN KEY (username) REFERENCES Users(username)
 ) engine = InnoDB;
 
 CREATE TABLE Seller(
-	seller_id 		INT NOT NULL,
-	name			VARCHAR(20),
-	email			VARCHAR(40),
-	PRIMARY KEY(seller_id)
+	seller_id 		INT NOT NULL AUTO_INCREMENT,
+	username		VARCHAR(10) NOT NULL,
+	PRIMARY KEY(seller_id, username),
+	FOREIGN KEY (username) REFERENCES Users(username)
 ) engine = InnoDB;
 
 CREATE TABLE Textbook(
@@ -56,7 +64,7 @@ CREATE TABLE Listing(
 	ISBN			VARCHAR(13) NOT NULL,
 	CRN				INT NOT NULL,
 	date_listed	    DATE,              -- YYYY-MM-DD
-	price		    DECIMAL(5,2) NOT NULL,
+	price		    INT NOT NULL,
 	book_condition	ENUM('Poor', 'Fair', 'Good', 'Very Good', 'Like New'),
 	listing_state 	ENUM('Public', 'Hidden'),
 	PRIMARY KEY (listing_id),
@@ -79,19 +87,31 @@ CREATE TABLE Request(
 ) engine=InnoDB;
 
 
-INSERT INTO Buyer VALUES
-	(1,'John James','jjames@zagmail.gonzaga.edu'),
-	(2,'Paul Yurmp', 'pyurmp@zagmail.gonzaga.edu'),
-	(3,'Joe Evans','jevans3@zagmail.gonzaga.edu'),
-	(4,'Ellen Grey','egrey@zagmail.gonzaga.edu'),
-	(5,'Collin Fisher', 'cfisher2@zagmail.gonzaga.edu');
+INSERT INTO Users VALUES
+	('jjames', 'password1', 'John James'),
+	('pyurmp', 'password2', 'Paul Yurmp'),
+	('jevans3', 'password3', 'Joe Evans'),
+	('egrey', 'password4', 'Ellen Grey'),
+	('cfisher2', 'password5', 'Collin Fisher'),
+	('mstevenson', 'password6', 'Michelle Stevenson'),
+	('kkip', 'password7', 'Kyle Kip'),
+	('tdrake', 'password8', 'Tyler Drake'),
+	('ssmith7', 'password9', 'Stacy Smith'),
+	('showlett', 'password10', 'Scott Howlett');
 
-INSERT INTO Seller VALUES
-	(1,'Michelle Stevenson','mstevenson@zagmail.gonzaga.edu'),
-	(2,'Kyle Kip','kkip@zagmail.gonzaga.edu'),
-	(3,'Tyler Drake', 'tdrake@zagmail.gonzaga.edu'),
-	(4,'Stacy Smith', 'ssmith7@zagmail.gonzaga.edu'),
-	(5,'Scott Howlett','showlett@zagmail.gonzaga.edu');
+INSERT INTO Buyer (username) VALUES
+	('jjames'),
+	('pyurmp'),
+	('jevans3'),
+	('egrey'),
+	('cfisher2');
+
+INSERT INTO Seller (username) VALUES
+	('mstevenson'),
+	('kkip'),
+	('tdrake'),
+	('ssmith7'),
+	('showlett');
 
 INSERT INTO Textbook VALUES
 	('9781234567891', 'Computer Hardware', 'Greg Computer', 2, 'Jacobs Publishing Inc.', 2016, 157.00),
@@ -114,8 +134,10 @@ INSERT INTO CourseTextbook VALUES
 	('9780073523323', 11485),
 	('9781469894201', 13562);
 
-INSERT INTO Listing VALUES
-        (1,2,'9781118063330',11014,"2018-08-26",20.00,'Fair','Public');
+INSERT INTO Listing VALUES 
+	(1, 5, 9781234567891, 11014, '2018-05-09', 50, 'Good', 'Public'),
+	(2, 3, 9781234567891, 11014, '2018-05-27', 75, 'Very Good', 'Public'),
+	(3, 4, 9781234567891, 11014, '2018-04-18', 30, 'Fair', 'Hidden');
 
 /*	
 SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN
