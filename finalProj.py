@@ -27,12 +27,13 @@ def main():
 	except mysql.connector.Error as err:
 		print(err)
 
-	
+#this function asks for the buyerID and then displays a menu of options for the buyer	
 def buyerOption(con, rs):
 	buyerID = input("Input your buyer ID: ")
 	#validate buyer_id
 	buyerMenuDisplay(con, rs, buyerID)
-	
+
+# this function displays the menu and calls the correct option based on the buyer's selection	
 def buyerMenuDisplay(con, rs, buyerID):
 	print
 	print("Your Menu:")
@@ -43,43 +44,45 @@ def buyerMenuDisplay(con, rs, buyerID):
 	print("5.	Exit")
 	menuChoice = input("Enter your choice: ")
 	
+        #check the menu choice of the buyer
 	if menuChoice == 1:
-		searchTextbooks(con, rs)
+		searchTextbooks(con, rs, buyerID)
+                buyerMenuDisplay(con, rs, buyerID)
 	elif menuChoice == 2:
 		searchClasses(con, rs)
+                buyerMenuDisplay(con, rs, buyerID)
 	elif menuChoice == 3:
 		searchClassTextbooks(con, rs)
+                buyerMenuDisplay(con, rs, buyerID)
 	elif menuChoice == 4:
 		searchSellers(con, rs, buyerID)
+                buyerMenuDisplay(con, rs, buyerID)
 	elif menuChoice == 5:
 		exit()
 	else:
 		print
 		print("Please enter a viable option (1-4)")
 		buyerMenuDisplay(con, rs, buyerID)
-		
-def searchTextbooks(con, rs):
+
+#this function allows the user to search for a textbook using the ISBN number		
+def searchTextbooks(con, rs,buyerID):
 	print
 	print("Search Textbooks")
 	print("Please enter the following information")
-	ISBN = input("Enter the ISBN 13 number: ")
-	#validate ISBN
+	ISBN = raw_input("Enter the ISBN 13 number: ")
 	
-	searchTxt = ('SELECT t.title, t.author, t.ISBN, t.edition, l.price '
-				 'FROM Textbook t JOIN Listing l USING (ISBN) '
-				 'WHERE t.ISBN = %s')
+	query = '''SELECT t.title as title, t.author as author, t.ISBN as ISBN, t.edition as edition, l.price as price
+		       FROM Textbook t JOIN Listing l USING (ISBN)
+		       WHERE t.ISBN = %s'''
 	print
-	rs.execute(searchTxt,(ISBN,))
-        row = rs.fetchone()
+	rs.execute(query,(ISBN,))
+        
+        for (title, author, ISBN, edition, price) in rs:
+            result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(title, author, ISBN, edition, price)
+	    print(result)
+      	print
 
-	if row is not None:
-	 	result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(row[0],row[1],row[2],row[3],row[4])
-		print(result)
-        else:
-            print("There are no textbooks found that match ISBN {}".format(ISBN))
-	print
-	buyerMenuDisplay(con,rs, buyerID)
-	
+#this function helps a buyer to search classes using the CRN code of the course	
 def searchClasses(con, rs):
 	print
 	print("Search class")
@@ -98,8 +101,8 @@ def searchClasses(con, rs):
 		result = 'CRN: {}, {}, {} {}-{}, {} {}'.format(a,b,c,d,e,f,g)
 		print(result)
 	print
-	buyerMenuDisplay(con,rs, buyerID)
 
+#this function is called when the user wants to search for class textbooks
 def searchClassTextbooks(con, rs):
 	print
 	print("Search Class Textbooks")
@@ -118,8 +121,7 @@ def searchClassTextbooks(con, rs):
 	for(a,b,c,d,e,f,g) in rs:
 		result = '(CRN: {}, {} {}-{}, {}) Required Text: "{}", ISBN: {}'.format(a,b,c,d,e,f,g)
 		print(result)
-	print
-	buyerMenuDisplay(con, rs, buyerID)	
+	print	
 
 def searchSellers(con, rs, buyerID):
 	print
@@ -127,12 +129,11 @@ def searchSellers(con, rs, buyerID):
 	print("Search Sellers")
 	print("Please enter the following information")
 	textbookTitle = raw_input("Enter the textbook title: ")
-	#validate TItle	
+	#validate Title	
 
-	SearchSell = ('SELECT S.name, T.title, L.price '
-				  'FROM Seller S, Listing L, Textbook T '
-				  'WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN '
-				  'and T.title = %s ')
+	SearchSell = '''SELECT S.name, T.title, L.price
+			FROM Seller S, Listing L, Textbook T
+		        WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN AND T.title = %s'''
 				  
 	rs.execute(SearchSell, (textbookTitle,))
 	print
@@ -140,9 +141,8 @@ def searchSellers(con, rs, buyerID):
 		result = '{}, {}, {}'.format(a,b,c)
 		print(result)
 	print
-	
 	searchSellerMenu(con, rs, textbookTitle, buyerID)
-	
+
 def searchSellerMenu(con, rs, textbookTitle, buyerID):
 	print
 	print("Here are some options for seller results: ")
