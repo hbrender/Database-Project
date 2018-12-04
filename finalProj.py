@@ -221,7 +221,7 @@ def requestTextbook(con, rs, buyerID, textbookTitle):
 	list_id = row[0]
 	sell_id = row[1]	
 
-	#add a new row in the request table
+	#add a new row and increment in the request table
 	insertReq = 'INSERT INTO Request(request_id, date_requested, request_state, listing_id, seller_id, buyer_id) VALUES(%s, %s, %s, %s, %s, %s)'
 	rs.execute(insertReq, (1, '2018-12-02','Pending',list_id,sell_id, buyerID))
 	con.commit()	
@@ -240,6 +240,8 @@ def sellerOption(con, rs):
         sellerMenuDisplay(con, rs, sellerID)
 	#start here on seller stuff, this is right when they enter 1 at the start
 	print
+
+#this function displays the menu for the seller's options
 def sellerMenuDisplay(con, rs, sellerID):
     print
     print("Your Menu:")
@@ -258,8 +260,10 @@ def sellerMenuDisplay(con, rs, sellerID):
         sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 3:
         addTextbookListing(con, rs, sellerID)
+        sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 4:
-         print(4)
+         seeTextbookRequests(con, rs, sellerID)
+         sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 5:
         exit()
     else:
@@ -340,6 +344,19 @@ def addTextbookListing(con, rs,sellerID):
     rs.execute(insert,(sellerID,isbn,crn,date_listed,price,book_cond,'Public'))
     con.commit()
     print("You have added a listing!")
+
+# this function is called when the seller wants to see the requests from buyers
+# for their textbook
+def seeTextbookRequests(con,rs,sellerID):
+    print("See Textbook Requests")
+    query = '''SELECT r.date_requested as date_requested, r.request_state as request_state, b.name as buyer_name
+               FROM Request r JOIN Buyer b USING (buyer_id)
+               WHERE seller_id = %s
+    '''
+    rs.execute(query,(sellerID,))
+    print("Date Requested, Request State, Buyer Name")
+    for(date_requested, request_state, buyer_name) in rs:
+        print '{} {} {}'.format(date_requested, request_state, buyer_name)
 if __name__ == '__main__':
 	main()
 	
