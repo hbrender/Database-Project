@@ -131,14 +131,14 @@ def searchSellers(con, rs, buyerID):
 	textbookTitle = raw_input("Enter the textbook title: ")
 	#validate Title	
 
-	SearchSell = '''SELECT S.name, T.title, L.price
+	SearchSell = '''SELECT S.name as name, T.title as title, L.price as price
 			FROM Seller S, Listing L, Textbook T
 		        WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN AND T.title = %s'''
 				  
 	rs.execute(SearchSell, (textbookTitle,))
 	print
-	for (a,b,c) in rs:
-		result = '{}, {}, {}'.format(a,b,c)
+	for (name, title, price) in rs:
+		result = '{}, {}, {}'.format(name, title, price)
 		print(result)
 	print
 	searchSellerMenu(con, rs, textbookTitle, buyerID)
