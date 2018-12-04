@@ -1,5 +1,6 @@
 import mysql.connector
 import config
+import getpass
 
 #buyer side can see and delete the listing, and listing gets removed from tables.
 
@@ -11,79 +12,202 @@ def main():
 		dab = 'TextbookSellingDB'
 		
 		#create connection
-		con = mysql.connector.connect(user=usr,password=pwd, host=hst, database=dab)
-										  
-		rs = con.cursor()
+		con = mysql.connector.connect(user=usr,password=pwd, host=hst, database=dab)						  
+		#rs = con.cursor()
+		rs = con.cursor(buffered=True)
 		
-		print("Are you:")
-		print("  1. Seller")
-		print("  2. Buyer")
-		userInput = input("Enter your selection: ")
-		if userInput == 1:
-			sellerOption(con,rs)
-		elif userInput == 2:
-			buyerOption(con,rs)
+		userOptions(con, rs)
 		
 	except mysql.connector.Error as err:
 		print(err)
+		
+def userOptions(con, rs):
+	print
+	print("1. Login")
+	print("2. Create Account")
+	print("3. Exit")
+	usrinput = raw_input("Enter your selection: ")
+	
+	if usrinput == '2' or usrinput == '2 ':
+		createAccount(con, rs)
+	elif usrinput == '1' or usrinput == '1 ':
+		username = raw_input("\tEnter username: ")
+		password = getpass.getpass(prompt='\tEnter password: ', stream=None)
+		
+		validLogin = False
+		query = '''SELECT * 
+				   FROM Users '''
+		rs.execute(query)
+		for(a,b,c) in rs:
+			user = '{}'.format(a)
+			passd = '{}'.format(b)
+			if username == user and passd == password:
+				validLogin = True
+				print
+				print("Hello, " + c)
+				print
+				buyerSellerOptions(con, rs, username)
 
-#this function asks for the buyerID and then displays a menu of options for the buyer	
-def buyerOption(con, rs):
-	buyerID = input("Input your buyer ID: ")
-	#validate buyer_id
-	buyerMenuDisplay(con, rs, buyerID)
+		if not validLogin:
+			print
+			print("\tThe username or password entered is incorrect")	
+			userOptions(con, rs)
+	elif usrinput == '3' or usrinput == '3 ':
+		exit()
+	else:
+		print
+		print("\tError: Invalid input")
+		print
+		userOptions(con,rs)
 
-# this function displays the menu and calls the correct option based on the buyer's selection	
+def buyerSellerOptions(con, rs, username):
+	print("Continue as a:")
+	print("  1. Seller")
+	print("  2. Buyer")
+	print("  3. Exit")
+	userInput = raw_input("Enter your selection: ")
+			
+	if userInput == '1' or userInput == '1 ':
+		sellerFound = False;
+		sellerCheck = ('SELECT * FROM Seller ')
+		rs.execute(sellerCheck)
+		
+		for(a,b) in rs:
+			usr = '{}'.format(a)
+			if usr == username:
+				sellerFound = True;
+		if not sellerFound:
+			insert = ('INSERT INTO Seller(username) VALUES (%s)')
+			rs.execute(insert, (username,))
+			con.commit()
+			
+		query = '''SELECT s.seller_id
+					FROM Seller s, Users u
+					WHERE u.username = s.username'''
+					
+		rs.execute(query)
+		
+		for (a) in rs:
+			sellerID = a
+		
+		sellerID = str(sellerID)
+		sellerID = sellerID.replace("(", "")
+		sellerID = sellerID.replace(",)", "")
+		sellerMenuDisplay(con,rs, sellerID)
+		
+	elif userInput == '2' or userInput == '2 ':
+		buyerFound = False;
+		query = ('SELECT * FROM Buyer')
+		rs.execute(query)
+		
+		for (a,b) in rs:
+			usr = '{}'.format(b)
+			if username == usr:
+				buyerFound = True;
+		if not buyerFound:
+			insert = ('INSERT INTO Buyer(username) VALUES (%s)')
+			rs.execute(insert, (username,))
+			con.commit()
+		
+		query = '''SELECT b.buyer_id
+					FROM Buyer b, Users u
+					WHERE u.username = b.username'''
+					
+		rs.execute(query)
+		
+		for (a) in rs:
+			buyerID = a
+		
+		buyerID = str(buyerID)
+		buyerID = buyerID.replace("(", "")
+		buyerID = buyerID.replace(",)", "")
+		buyerMenuDisplay(con, rs, buyerID)
+			
+	elif userInput == '3' or userInput == '3 ':
+		exit()
+	else:
+		print
+		print("\tError: Invalid input")
+		print
+		buyerSellerOptions(con, rs, username)
+
+def createAccount(con, rs):
+	print
+	username = raw_input("\tCreate a username (ie. jdoe): ")
+	
+	#check if user name already exists
+	check = '''SELECT *
+				FROM Users '''
+	rs.execute(check)
+	
+	isFound = False
+	
+	for (a,b,c) in rs:
+		usr = '{}'.format(a)
+		if username == usr:
+			isFound = True;
+	if not isFound:
+		password = getpass.getpass(prompt='\tCreate a password: ', stream=None)
+		name = raw_input("\tEnter name: ")	
+		insert = '''INSERT INTO Users(username, password, name) VALUES (%s, %s, %s)'''
+		rs.execute(insert, (username, password, name))
+		con.commit()
+			
+		print
+		print("\tYour account has been created")
+	else:
+		print
+		print("\tThis username is being used in another account")
+	userOptions(con, rs)
+	
 def buyerMenuDisplay(con, rs, buyerID):
 	print
 	print("Your Menu:")
-	print("1.	Search Textbooks")
-	print("2.	Search Classes")
-	print("3.       Search Class Textbooks")
-	print("4.	Search Sellers")
-	print("5.	Exit")
+	print("  1. Search Textbooks")
+	print("  2. Search Classes")
+	print("	 3. Search Class Textbooks")
+	print("	 4. Search Textbook Listings")
+	print("	 5. Exit")
 	menuChoice = input("Enter your choice: ")
 	
-        #check the menu choice of the buyer
 	if menuChoice == 1:
 		searchTextbooks(con, rs, buyerID)
-                buyerMenuDisplay(con, rs, buyerID)
 	elif menuChoice == 2:
-		searchClasses(con, rs)
-                buyerMenuDisplay(con, rs, buyerID)
+		searchClasses(con, rs, buyerID)
 	elif menuChoice == 3:
-		searchClassTextbooks(con, rs)
-                buyerMenuDisplay(con, rs, buyerID)
+		searchClassTextbooks(con, rs, buyerID)
 	elif menuChoice == 4:
-		searchSellers(con, rs, buyerID)
-                buyerMenuDisplay(con, rs, buyerID)
+		searchListings(con, rs, buyerID)
 	elif menuChoice == 5:
 		exit()
 	else:
 		print
-		print("Please enter a viable option (1-4)")
+		print("\tPlease enter a viable option (1-4)")
 		buyerMenuDisplay(con, rs, buyerID)
-
-#this function allows the user to search for a textbook using the ISBN number		
-def searchTextbooks(con, rs,buyerID):
+		
+def searchTextbooks(con, rs, buyerID):
 	print
 	print("Search Textbooks")
 	print("Please enter the following information")
-	ISBN = raw_input("Enter the ISBN 13 number: ")
-	
-	query = '''SELECT t.title as title, t.author as author, t.ISBN as ISBN, t.edition as edition, l.price as price
-		       FROM Textbook t JOIN Listing l USING (ISBN)
-		       WHERE t.ISBN = %s'''
+	ISBN = input("Enter the ISBN 13 number: ")
+	#validate ISBN
+				 
+	searchTxt = ('SELECT t.title, t.author, t.ISBN, t.edition, t.price '
+				 'FROM Textbook t '
+				 'WHERE t.ISBN = %s')
 	print
-	rs.execute(query,(ISBN,))
-        
-        for (title, author, ISBN, edition, price) in rs:
-            result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(title, author, ISBN, edition, price)
-	    print(result)
-      	print
+	rs.execute(searchTxt,(ISBN,))
+        row = rs.fetchone()
 
-#this function helps a buyer to search classes using the CRN code of the course	
-def searchClasses(con, rs):
+	if row is not None:
+	 	result = '"{}", By: {}, ISBN: {}, ed.{}, ${}'.format(row[0],row[1],row[2],row[3],row[4])
+		print(result)
+        else:
+            print("There are no textbooks found that match ISBN {}".format(ISBN))
+	print
+	buyerMenuDisplay(con,rs, buyerID)
+	
+def searchClasses(con, rs, buyerID):
 	print
 	print("Search class")
 	crn = raw_input("CRN: ")
@@ -101,9 +225,9 @@ def searchClasses(con, rs):
 		result = 'CRN: {}, {}, {} {}-{}, {} {}'.format(a,b,c,d,e,f,g)
 		print(result)
 	print
+	buyerMenuDisplay(con,rs, buyerID)
 
-#this function is called when the user wants to search for class textbooks
-def searchClassTextbooks(con, rs):
+def searchClassTextbooks(con, rs, buyerID):
 	print
 	print("Search Class Textbooks")
 	crn = input("CRN: ")
@@ -121,43 +245,52 @@ def searchClassTextbooks(con, rs):
 	for(a,b,c,d,e,f,g) in rs:
 		result = '(CRN: {}, {} {}-{}, {}) Required Text: "{}", ISBN: {}'.format(a,b,c,d,e,f,g)
 		print(result)
-	print	
+	print
+	buyerMenuDisplay(con, rs, buyerID)	
 
-def searchSellers(con, rs, buyerID):
+def searchListings(con, rs, buyerID):
 	print
-	print
-	print("Search Sellers")
+	print("Search Textbook Listings")
 	print("Please enter the following information")
 	textbookTitle = raw_input("Enter the textbook title: ")
 	#validate Title	
 
-	SearchSell = '''SELECT S.name as name, T.title as title, L.price as price
-			FROM Seller S, Listing L, Textbook T
-		        WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN AND T.title = %s'''
+	query = '''SELECT u.name, t.title, l.price, l.book_condition
+				    FROM Seller s, Listing l, Textbook t, Users u
+				    WHERE s.seller_id = l.seller_id 
+					AND u.username = s.username
+				    AND l.ISBN = t.ISBN 
+					AND l.listing_state = 'Public'
+				    AND t.title = %s '''
 				  
-	rs.execute(SearchSell, (textbookTitle,))
+	rs.execute(query, (textbookTitle,))
 	print
-	for (name, title, price) in rs:
-		result = '{}, {}, {}'.format(name, title, price)
+	for (a,b,c,d) in rs:
+		result = '{}, {}, {}, {}'.format(a,b,c,d)
 		print(result)
 	print
-	searchSellerMenu(con, rs, textbookTitle, buyerID)
-
-def searchSellerMenu(con, rs, textbookTitle, buyerID):
+	
+	searchListingsMenu(con, rs, textbookTitle, buyerID)
+	
+def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	print
 	print("Here are some options for seller results: ")
-	print("1.	Sort the sellers from lowest to highest price")
-	print("2.	Sort the sellers from highest to lowest price")
-	print("3.	Request a textbook from a seller")
-	print("4.	Find textbook within a price range")
+	print("  1. Sort the sellers from lowest to highest price")
+	print("  2. Sort the sellers from highest to lowest price")
+	print("  3. Request a textbook from a seller")
+	print("  4. Find textbook within a price range")
+	print("  5. Find listings for another title")
+	print("  6. Exit")
 	print
 	userChoice = input("Enter what option you want: ")
 	if userChoice == 1:
-		SearchSell = ('SELECT S.name, T.title, L.price '
-					  'FROM Seller S, Listing L, Textbook T '
-					  'WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN '
-					  'and T.title = %s '
-					  'ORDER BY L.price')
+		SearchSell = ('SELECT u.name, t.title, l.price '
+					  'FROM Users u, Seller s, Listing l, Textbook t '
+					  'WHERE s.seller_id = l.seller_id AND l.ISBN = t.ISBN '
+					  'AND u.username = s.username '
+					   "AND l.listing_state = 'Public' "
+					  'AND t.title = %s '
+					  'ORDER BY l.price')
 					  
 		rs.execute(SearchSell, (textbookTitle,))
 		print
@@ -166,9 +299,12 @@ def searchSellerMenu(con, rs, textbookTitle, buyerID):
 			print(result)
 		print
 	elif userChoice == 2:
-		SearchSell = ('SELECT S.name, T.title, L.price '
-					  'FROM Seller S, Listing L, Textbook T '
-					  'WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN '
+		SearchSell = ('SELECT U.name, T.title, L.price '
+					  'FROM Users U, Seller S, Listing L, Textbook T '
+					  'WHERE S.seller_id = L.seller_id '
+					  'AND U.username = S.username '
+					  'AND L.ISBN = T.ISBN '
+					  "AND L.listing_state = 'Public' "
 					  'and T.title = %s '
 					  'ORDER BY L.price DESC ')
 					  
@@ -182,11 +318,13 @@ def searchSellerMenu(con, rs, textbookTitle, buyerID):
 	elif userChoice == 3:
 		requestTextbook(con, rs, buyerID, textbookTitle)
 	elif userChoice == 4:
-		lowPrice = input("Enter the low end of your price range")
-		highPrice = input("Enter the high end of your price range")
-		SearchSell = ('SELECT S.name, T.title, L.price '
-					  'FROM Seller S, Listing L, Textbook T '
+		lowPrice = input("\tEnter the low end of your price range: ")
+		highPrice = input("\tEnter the high end of your price range: ")
+		SearchSell = ('SELECT u.name, T.title, L.price '
+					  'FROM Users u, Seller S, Listing L, Textbook T '
 					  'WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN '
+					   "AND L.listing_state = 'Public' "
+					  'and u.username = S.username '
 					  'and T.title = %s AND L.price > %s AND L.Price < %s')
 					  
 		rs.execute(SearchSell, (textbookTitle, lowPrice, highPrice))
@@ -196,24 +334,29 @@ def searchSellerMenu(con, rs, textbookTitle, buyerID):
 			result = '{}, {}, {}'.format(a,b,c)
 			print(result)
 		print
+	elif userChoice == 5:
+		searchListings(con, rs, buyerID)
+	elif userChoice == 6:
+		exit()
 	else:
 		print("Please enter a valid choice (1-4)")
-		searchSellerMenu(con, rs)
+		searchListingsMenu(con, rs, textbookTitle, buyerID)
 
-	searchSellerMenu(con,rs,textbookTitle)
+	searchListingsMenu(con,rs,textbookTitle, buyerID)
 	
 def requestTextbook(con, rs, buyerID, textbookTitle):
 	print
-	sellerReq = raw_input("Enter the seller you wish to request this book from: ")
+	sellerReq = raw_input("Enter seller name you wish to request book from: ")
 
 	#validate the sellerReq
 	
 	findListing = ('Select L.listing_id, S.seller_id '
-		       'FROM Listing L, Seller S, Textbook T '
+		       'FROM Listing L, Seller S, Textbook T, Users U '
 		       'WHERE T.title = %s '
 		       'AND T.ISBN = L.ISBN '
 		       'AND L.seller_id = S.seller_id '
-		       'AND S.name = %s')
+			   'AND U.username = S.username '
+		       'AND U.name = %s')
 
 	rs.execute(findListing, (textbookTitle,sellerReq))
 
@@ -352,11 +495,10 @@ def seeTextbookRequests(con,rs,sellerID):
     query = '''SELECT r.date_requested as date_requested, r.request_state as request_state, b.name as buyer_name
                FROM Request r JOIN Buyer b USING (buyer_id)
                WHERE seller_id = %s
-    '''
+			'''
     rs.execute(query,(sellerID,))
     print("Date Requested, Request State, Buyer Name")
     for(date_requested, request_state, buyer_name) in rs:
         print '{} {} {}'.format(date_requested, request_state, buyer_name)
 if __name__ == '__main__':
 	main()
-	
