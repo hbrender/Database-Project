@@ -74,7 +74,7 @@ CREATE TABLE Listing(
 ) engine = InnoDB;
 
 CREATE TABLE Request(
-	request_id	    INT NOT NULL,
+	request_id	    INT NOT NULL AUTO_INCREMENT,
 	date_requested  DATE,             -- YYYY-MM-DD
 	request_state	ENUM('Pending', 'Approved', 'Declined'),
 	listing_id	    INT NOT NULL,
@@ -137,7 +137,7 @@ INSERT INTO CourseTextbook VALUES
 INSERT INTO Listing VALUES 
 	(1, 5, 9781234567891, 11014, '2018-05-09', 50, 'Good', 'Public'),
 	(2, 3, 9781234567891, 11014, '2018-05-27', 75, 'Very Good', 'Public'),
-	(3, 4, 9781234567891, 11014, '2018-04-18', 30, 'Fair', 'Hidden');
+ 	(3, 4, 9781234567891, 11014, '2018-04-18', 30, 'Fair', 'Hidden');
 
 /*	
 SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN

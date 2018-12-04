@@ -1,6 +1,7 @@
 import mysql.connector
 import config
 import getpass
+import datetime
 
 #buyer side can see and delete the listing, and listing gets removed from tables.
 
@@ -168,7 +169,11 @@ def buyerMenuDisplay(con, rs, buyerID):
 	print("	 3. Search Class Textbooks")
 	print("	 4. Search Textbook Listings")
 	print("	 5. Exit")
-	menuChoice = input("Enter your choice: ")
+	try:
+		menuChoice = int(raw_input("Enter your choice: "))
+	except ValueError:
+		print("\n\tOnly enter integer values")
+		buyerMenuDisplay(con,rs,buyerID)
 	
 	if menuChoice == 1:
 		searchTextbooks(con, rs, buyerID)
@@ -182,16 +187,19 @@ def buyerMenuDisplay(con, rs, buyerID):
 		exit()
 	else:
 		print
-		print("\tPlease enter a viable option (1-4)")
+		print("\tPlease enter a viable option (1-5)")
 		buyerMenuDisplay(con, rs, buyerID)
 		
 def searchTextbooks(con, rs, buyerID):
 	print
 	print("Search Textbooks")
 	print("Please enter the following information")
-	ISBN = input("Enter the ISBN 13 number: ")
-	#validate ISBN
-				 
+	try:
+		ISBN = int(raw_input("Enter the ISBN 13 number: "))
+	except ValueError:
+		print("please only enter numbers")
+		searchTextbooks(con,rs,buyerID)
+		 
 	searchTxt = ('SELECT t.title, t.author, t.ISBN, t.edition, t.price '
 				 'FROM Textbook t '
 				 'WHERE t.ISBN = %s')
@@ -209,9 +217,13 @@ def searchTextbooks(con, rs, buyerID):
 	
 def searchClasses(con, rs, buyerID):
 	print
+	isThere = False
 	print("Search class")
-	crn = raw_input("CRN: ")
-	#validate CRN
+	try:
+		crn = int(raw_input("CRN: "))
+	except ValueError:
+		print("please only enter integer values")
+		searchClasses(con,rs,buyerID)
 
 	print
 	
@@ -224,14 +236,22 @@ def searchClasses(con, rs, buyerID):
 	for(a,b,c,d,e,f,g) in rs:
 		result = 'CRN: {}, {}, {} {}-{}, {} {}'.format(a,b,c,d,e,f,g)
 		print(result)
+		isThere = True
 	print
+	if not isThere:
+		print("There are currently no classes that match that CRN")
+	
 	buyerMenuDisplay(con,rs, buyerID)
 
 def searchClassTextbooks(con, rs, buyerID):
 	print
+	isThere = False
 	print("Search Class Textbooks")
-	crn = input("CRN: ")
-	#validate CRN
+	try:
+		crn = int(raw_input("CRN: "))
+	except ValueError:
+		print("please only enter integer values")
+		searchClasses(con,rs,buyerID)
 	print
 	
 	searchC = ('SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN '
@@ -245,16 +265,19 @@ def searchClassTextbooks(con, rs, buyerID):
 	for(a,b,c,d,e,f,g) in rs:
 		result = '(CRN: {}, {} {}-{}, {}) Required Text: "{}", ISBN: {}'.format(a,b,c,d,e,f,g)
 		print(result)
+		isThere = True
 	print
+	if not isThere:	
+		print("There are currently no textbooks listed for that class")
 	buyerMenuDisplay(con, rs, buyerID)	
 
 def searchListings(con, rs, buyerID):
 	print
+	isThere = False
 	print("Search Textbook Listings")
 	print("Please enter the following information")
 	textbookTitle = raw_input("Enter the textbook title: ")
-	#validate Title	
-
+	
 	query = '''SELECT u.name, t.title, l.price, l.book_condition
 				    FROM Seller s, Listing l, Textbook t, Users u
 				    WHERE s.seller_id = l.seller_id 
@@ -268,8 +291,11 @@ def searchListings(con, rs, buyerID):
 	for (a,b,c,d) in rs:
 		result = '{}, {}, {}, {}'.format(a,b,c,d)
 		print(result)
+		isThere = True
 	print
-	
+	if not isThere:
+		print("You have entered a book that doesn't have any listings")
+		buyerMenuDisplay(con,rs,buyerID)
 	searchListingsMenu(con, rs, textbookTitle, buyerID)
 	
 def searchListingsMenu(con, rs, textbookTitle, buyerID):
@@ -282,7 +308,11 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	print("  5. Find listings for another title")
 	print("  6. Exit")
 	print
-	userChoice = input("Enter what option you want: ")
+	try:
+		userChoice = int(raw_input("Enter what option you want: "))
+	except ValueError:
+		print("only enter integers here")
+		searchListingsMenu(con,rs,textbookTitle,buyerID)
 	if userChoice == 1:
 		SearchSell = ('SELECT u.name, t.title, l.price '
 					  'FROM Users u, Seller s, Listing l, Textbook t '
@@ -339,16 +369,16 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	elif userChoice == 6:
 		exit()
 	else:
-		print("Please enter a valid choice (1-4)")
+		print("Please enter a valid choice (1-6)")
 		searchListingsMenu(con, rs, textbookTitle, buyerID)
 
 	searchListingsMenu(con,rs,textbookTitle, buyerID)
 	
 def requestTextbook(con, rs, buyerID, textbookTitle):
 	print
-	sellerReq = raw_input("Enter seller name you wish to request book from: ")
+	sellerReq = raw_input("Enter seller name you wish to request book from: ")	
 
-	#validate the sellerReq
+	date = datetime.datetime.now().strftime("%y-%m-%d")
 	
 	findListing = ('Select L.listing_id, S.seller_id '
 		       'FROM Listing L, Seller S, Textbook T, Users U '
@@ -359,14 +389,15 @@ def requestTextbook(con, rs, buyerID, textbookTitle):
 		       'AND U.name = %s')
 
 	rs.execute(findListing, (textbookTitle,sellerReq))
+	
 
 	row = rs.fetchone()
 	list_id = row[0]
 	sell_id = row[1]	
 
-	#add a new row and increment in the request table
-	insertReq = 'INSERT INTO Request(request_id, date_requested, request_state, listing_id, seller_id, buyer_id) VALUES(%s, %s, %s, %s, %s, %s)'
-	rs.execute(insertReq, (1, '2018-12-02','Pending',list_id,sell_id, buyerID))
+
+	insertReq = 'INSERT INTO Request( date_requested, request_state, listing_id, seller_id, buyer_id) VALUES( %s, %s, %s, %s, %s)'
+	rs.execute(insertReq, ( date,'Pending',list_id,sell_id, buyerID))
 	con.commit()	
 	
 	print("Book has been requested, returning to main menu")
