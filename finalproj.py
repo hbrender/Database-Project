@@ -3,7 +3,6 @@ import config
 import getpass
 import datetime
 
-#buyer side can see and delete the listing, and listing gets removed from tables.
 
 def main():
 	try: 
@@ -169,8 +168,9 @@ def buyerMenuDisplay(con, rs, buyerID):
 	print("	 3. Search Class Textbooks")
 	print("	 4. Search Textbook Listings")
 	print("	 5. Return to main menu")
-	# see request option
-	print("	 6. Exit")
+	print("  6. See your requests " )
+	print("  7. see textbooks that don't have a listing")
+	print("	 8. Exit")
 	try:
 		menuChoice = int(raw_input("Enter your choice: "))
 	except ValueError:
@@ -188,15 +188,72 @@ def buyerMenuDisplay(con, rs, buyerID):
 	elif menuChoice == 5:
 		buyerSellerOptions(con, rs, username)
 	elif menuChoice == 6:
+		seeRequests(con,rs,buyerID)
+	elif menuChoice == 7:
+		txtNoListing(con,rs,buyerID)
+	elif menuChoice == 8:
 		exit()
 	else:
 		print
-		print("\tPlease enter a viable option (1-5)")
+		print("\tPlease enter a viable option (1-8)")
 		buyerMenuDisplay(con, rs, buyerID)
 
-# see request function
-	# display three seperate parts (pending approved declined)
-	# in approved one, give display email (construct using user name)
+def seeRequests(con,rs,buyerID):
+	print
+	declined = ('Select t.Title,R.seller_id '
+		    'FROM Textbook t join Listing L using(ISBN), Request R '
+		    'WHERE R.request_state = "Declined" and R.buyer_id = %s and '
+		    '      L.seller_id = R.seller_id')
+	rs.execute(declined,(buyerID,))
+	print("-------------------")
+	print("-Declined Requests-")
+	print("-------------------")
+	for (a,b) in rs:
+		result = 'Textbook: {}, Seller: {}'.format(a,b)
+		print(result)
+	print
+
+	print
+	pending = ('Select t.Title,R.seller_id '
+		    'FROM Textbook t join Listing L using(ISBN), Request R '
+		    'WHERE R.request_state = "Pending" and R.buyer_id = %s and '
+		    '      L.seller_id = R.seller_id')
+	rs.execute(pending,(buyerID,))
+	print("-------------------")
+	print("-Pending Requests-")
+	print("-------------------")
+	for (a,b) in rs:
+		result = 'Textbook: {}, Seller: {}'.format(a,b)
+		print(result)
+	print
+
+	print
+	accepted = ('Select t.Title,R.seller_id '
+		    'FROM Textbook t join Listing L using(ISBN), Request R '
+		    'WHERE R.request_state = "Approved" and R.buyer_id = %s and '
+		    '      L.seller_id = R.seller_id')
+	rs.execute(accepted,(buyerID,))
+	print("-------------------")
+	print("-Approved Requests-")
+	print("-------------------")
+	for (a,b) in rs:
+		result = 'Textbook: {}, Seller Email: {}@zagmail.gonzaga.edu'.format(a,b)
+		print(result)
+	print
+
+	buyerMenuDisplay(con,rs,buyerID)
+
+def txtNoListing(con,rs,buyerID):
+	outerQ = ('SELECT T.title, T.ISBN '
+		  'FROM Textbook T LEFT JOIN Listing L USING (ISBN) '
+		  'WHERE L.ISBN is NULL')
+
+	print
+	rs.execute(outerQ)
+	for (a,b) in rs:
+		result = 'Textbook: {}, ISBN: {}'.format(a,b)
+		print(result)
+	buyerMenuDisplay(con,rs,buyerID)
 	
 def searchTextbooks(con, rs, buyerID):
 	print
@@ -314,7 +371,8 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	print("\t3. Request a textbook from a seller")
 	print("\t4. Find textbook within a price range")
 	print("\t5. Find listings for another title")
-	print("\t6. Exit")
+	print("\t6. Find the lowest priced book")
+	print("\t7. Exit")
 	print
 	try:
 		userChoice = int(raw_input("Enter what option you want: "))
@@ -375,9 +433,22 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	elif userChoice == 5:
 		searchListings(con, rs, buyerID)
 	elif userChoice == 6:
+		lowestPrice = (' SELECT S.username, L.price '
+			       ' FROM Seller S JOIN Listing L using(seller_id), Textbook T '
+			       ' WHERE L.ISBN = T.ISBN and T.title = %s and L.listing_state = "Public" '
+			       '       AND  L.price = (SELECT min(Y.price) '
+							' FROM Seller X JOIN Listing Y using(seller_id), Textbook Z '
+							' WHERE Y.ISBN = Z.ISBN and Z.title = %s and Y.listing_state = "Public")')
+		rs.execute(lowestPrice,(textbookTitle,textbookTitle))
+		print
+		for(a,b) in rs:
+			result = 'seller: {}, price: {}'.format(a,b)
+			print(result)
+
+	elif userChoice == 7:
 		exit()
 	else:
-		print("Please enter a valid choice (1-6)")
+		print("Please enter a valid choice (1-7)")
 		searchListingsMenu(con, rs, textbookTitle, buyerID)
 
 	searchListingsMenu(con,rs,textbookTitle, buyerID)
