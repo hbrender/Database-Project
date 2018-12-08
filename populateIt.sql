@@ -73,6 +73,8 @@ CREATE TABLE Listing(
 	FOREIGN KEY (seller_id) REFERENCES Seller(seller_id)
 ) engine = InnoDB;
 
+ALTER TABLE Listing AUTO_INCREMENT = 1;
+
 CREATE TABLE Request(
 	request_id	    INT NOT NULL AUTO_INCREMENT,
 	date_requested  DATE,             -- YYYY-MM-DD
@@ -85,6 +87,8 @@ CREATE TABLE Request(
 	FOREIGN KEY (seller_id) REFERENCES Seller(seller_id),
 	FOREIGN KEY (buyer_id)	REFERENCES Buyer(buyer_id)
 ) engine=InnoDB;
+
+ALTER TABLE Request AUTO_INCREMENT = 1;
 
 
 INSERT INTO Users VALUES
@@ -138,6 +142,9 @@ INSERT INTO Listing VALUES
 	(1, 5, 9781234567891, 11014, '2018-05-09', 50, 'Good', 'Public'),
 	(2, 3, 9781234567891, 11014, '2018-05-27', 75, 'Very Good', 'Public'),
  	(3, 4, 9781234567891, 11014, '2018-04-18', 30, 'Fair', 'Hidden');
+	
+-- INSERT INTO Request VALUES
+	-- (1, '2018-12-07', 'Pending', 1, 
 
 /*	
 SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN
@@ -145,7 +152,6 @@ FROM CourseTextbook ct, Course c, Textbook t
 WHERE c.CRN = 11014
 AND ct.CRN = c.CRN
 AND t.ISBN = ct.ISBN;
-
 SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN
 FROM CourseTextbook ct, Course c, Textbook t
 WHERE c.CRN = NULL
