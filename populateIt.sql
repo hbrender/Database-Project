@@ -90,7 +90,6 @@ CREATE TABLE Request(
 
 ALTER TABLE Request AUTO_INCREMENT = 1;
 
-
 INSERT INTO Users VALUES
 	('jjames', 'password1', 'John James'),
 	('pyurmp', 'password2', 'Paul Yurmp'),
@@ -101,21 +100,24 @@ INSERT INTO Users VALUES
 	('kkip', 'password7', 'Kyle Kip'),
 	('tdrake', 'password8', 'Tyler Drake'),
 	('ssmith7', 'password9', 'Stacy Smith'),
-	('showlett', 'password10', 'Scott Howlett');
+	('showlett', 'password10', 'Scott Howlett'),
+	('hbrender', '12', 'Hanna Brender');
 
 INSERT INTO Buyer (username) VALUES
 	('jjames'),
 	('pyurmp'),
 	('jevans3'),
 	('egrey'),
-	('cfisher2');
+	('cfisher2'),
+	('hbrender');
 
 INSERT INTO Seller (username) VALUES
 	('mstevenson'),
 	('kkip'),
 	('tdrake'),
 	('ssmith7'),
-	('showlett');
+	('showlett'),
+	('hbrender');
 
 INSERT INTO Textbook VALUES
 	('9781234567891', 'Computer Hardware', 'Greg Computer', 2, 'Jacobs Publishing Inc.', 2016, 157.00),
@@ -164,6 +166,8 @@ INSERT INTO Listing VALUES
 	(1, 5, 9781234567891, 11014, '2018-05-09', 50, 'Good', 'Public'),
 	(2, 3, 9781234567891, 11014, '2018-05-27', 75, 'Very Good', 'Public'),
  	(3, 4, 9781234567891, 11014, '2018-04-18', 30, 'Fair', 'Hidden'),
+	(11, 2, 9781234567891, 11014, '2018-12-11', 100, 'Like New', 'Public'),
+	(12, 1, 9781234567891, 11014, '2018-12-10', 19, 'Poor', 'Public'),
 	(4, 3, 1234567890123, 32453, '2018-04-19', 40, 'Good', 'Public'),
 	(5, 2, 2345678901234, 21875, '2018-01-01', 50, 'Very Good', 'Public'),
 	(6, 1, 3456789012345, 94836, '2018-05-07', 70, 'Fair', 'Public'),
@@ -172,4 +176,8 @@ INSERT INTO Listing VALUES
 	(9, 5, 6789012345678, 45673, '2018-10-08', 40, 'Good', 'Public'),
 	(10, 2, 7890123456789, 43561, '2018-9-27', 70, 'Very Good', 'Public');
 
-
+INSERT INTO Request VALUES
+	(1, '2018-12-08', 'Pending', 1, 5, 6),
+	(2, '2018-12-10', 'Pending', 2, 3, 6),
+	(3, '2018-10-10', 'Approved', 11, 3, 6), 
+	(4, '2018-12-10', 'Declined', 5, 2, 6);
