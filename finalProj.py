@@ -167,10 +167,9 @@ def buyerMenuDisplay(con, rs, buyerID):
 	print("  2. Search Classes")
 	print("	 3. Search Class Textbooks")
 	print("	 4. Search Textbook Listings")
-	print("	 5. Return to main menu")
-	print("  6. See your requests " )
-	print("  7. see textbooks that don't have a listing")
-	print("	 8. Exit")
+	print("  5. See your requests " )
+	print("  6. see textbooks that don't have a listing")
+	print("	 7. Exit")
 	try:
 		menuChoice = int(raw_input("Enter your choice: "))
 	except ValueError:
@@ -186,12 +185,10 @@ def buyerMenuDisplay(con, rs, buyerID):
 	elif menuChoice == 4:
 		searchListings(con, rs, buyerID)
 	elif menuChoice == 5:
-		buyerSellerOptions(con, rs, username)
-	elif menuChoice == 6:
 		seeRequests(con,rs,buyerID)
-	elif menuChoice == 7:
+	elif menuChoice == 6:
 		txtNoListing(con,rs,buyerID)
-	elif menuChoice == 8:
+	elif menuChoice == 7:
 		exit()
 	else:
 		print
@@ -343,7 +340,7 @@ def searchListings(con, rs, buyerID):
 	print("Please enter the following information")
 	textbookTitle = raw_input("Enter the textbook title: ")
 	
-	query = '''SELECT l.listing_id, u.name, t.title, l.price, l.book_condition
+	query = '''SELECT l.listing_id, u.name, t.title, l.price, l.book_condition, l.date_listed
 				    FROM Seller s, Listing l, Textbook t, Users u
 				    WHERE s.seller_id = l.seller_id 
 					AND u.username = s.username
@@ -353,8 +350,8 @@ def searchListings(con, rs, buyerID):
 				  
 	rs.execute(query, (textbookTitle,))
 	print
-	for (a,b,c,d,e) in rs:
-		result = '{}, {}, {}, {}'.format(a,b,c,d,e)
+	for (a,b,c,d,e,f) in rs:
+		result = 'Listing ID: {}, Seller: {}, {}, ${}, Condition: {}, Date Posted: {}'.format(a,b,c,d,e,f)
 		print(result)
 		isThere = True
 	print
@@ -380,7 +377,7 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 		print("only enter integers here")
 		searchListingsMenu(con,rs,textbookTitle,buyerID)
 	if userChoice == 1:
-		SearchSell = ('SELECT u.name, t.title, l.price '
+		SearchSell = ('SELECT l.listing_id, u.name, t.title, l.price,l.book_condition, l.date_listed '
 					  'FROM Users u, Seller s, Listing l, Textbook t '
 					  'WHERE s.seller_id = l.seller_id AND l.ISBN = t.ISBN '
 					  'AND u.username = s.username '
@@ -390,12 +387,12 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 					  
 		rs.execute(SearchSell, (textbookTitle,))
 		print
-		for (a,b,c) in rs:
-			result = '{}, {}, {}'.format(a,b,c)
+		for (a,b,c,d,e,f) in rs:
+			result = 'Listing ID: {}, Seller: {}, {}, ${}, Condition: {}, Date Posted: {}'.format(a,b,c,d,e,f)
 			print(result)
 		print
 	elif userChoice == 2:
-		SearchSell = ('SELECT U.name, T.title, L.price '
+		SearchSell = ('SELECT L.listing_id, U.name, T.title, L.price,L.book_condition, L.date_listed '
 					  'FROM Users U, Seller S, Listing L, Textbook T '
 					  'WHERE S.seller_id = L.seller_id '
 					  'AND U.username = S.username '
@@ -407,8 +404,8 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 		rs.execute(SearchSell, (textbookTitle,))
 		
 		print
-		for (a,b,c) in rs:
-			result = '{}, {}, {}'.format(a,b,c)
+		for (a,b,c,d,e,f) in rs:
+			result = 'Listing ID: {}, Seller: {}, {}, ${}, Condition: {}, Date Posted: {}'.format(a,b,c,d,e,f)
 			print(result)
 		print
 	elif userChoice == 3:
@@ -416,7 +413,7 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	elif userChoice == 4:
 		lowPrice = input("\tEnter the low end of your price range: ")
 		highPrice = input("\tEnter the high end of your price range: ")
-		SearchSell = ('SELECT u.name, T.title, L.price '
+		SearchSell = ('SELECT L.listing_id, u.name, T.title, L.price, L.book_condition, L.date_listed '
 					  'FROM Users u, Seller S, Listing L, Textbook T '
 					  'WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN '
 					   "AND L.listing_state = 'Public' "
@@ -426,14 +423,14 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 		rs.execute(SearchSell, (textbookTitle, lowPrice, highPrice))
 		
 		print
-		for (a,b,c) in rs:
-			result = '{}, {}, {}'.format(a,b,c)
+		for (a,b,c,d,e,f) in rs:
+			result = 'Listing ID: {}, Seller: {}, {}, ${}, Condition: {}, Date Posted: {}'.format(a,b,c,d,e,f)
 			print(result)
 		print
 	elif userChoice == 5:
 		searchListings(con, rs, buyerID)
 	elif userChoice == 6:
-		lowestPrice = (' SELECT S.username, L.price '
+		lowestPrice = (' SELECT L.listing_id, S.username, T.title, L.price, L.book_condition,  L.date_listed'
 			       ' FROM Seller S JOIN Listing L using(seller_id), Textbook T '
 			       ' WHERE L.ISBN = T.ISBN and T.title = %s and L.listing_state = "Public" '
 			       '       AND  L.price = (SELECT min(Y.price) '
@@ -441,8 +438,8 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 							' WHERE Y.ISBN = Z.ISBN and Z.title = %s and Y.listing_state = "Public")')
 		rs.execute(lowestPrice,(textbookTitle,textbookTitle))
 		print
-		for(a,b) in rs:
-			result = 'seller: {}, price: {}'.format(a,b)
+		for(a,b,c,d,e,f) in rs:
+			result = 'Listing ID: {}, Seller: {}, {}, ${}, Condition: {}, Date Posted: {}'.format(a,b,c,d,e,f)
 			print(result)
 
 	elif userChoice == 7:
