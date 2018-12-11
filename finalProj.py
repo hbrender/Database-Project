@@ -197,10 +197,12 @@ def buyerMenuDisplay(con, rs, buyerID):
 
 def seeRequests(con,rs,buyerID):
 	print
-	declined = ('Select t.Title,R.seller_id '
-		    'FROM Textbook t join Listing L using(ISBN), Request R '
-		    'WHERE R.request_state = "Declined" and R.buyer_id = %s and '
-		    '      L.listing_id = R.listing_id')
+	declined = ('SELECT t.Title,s.username '
+		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
+		        ' WHERE R.request_state = "Declined" '
+                '	AND	R.buyer_id = %s '
+		        '   AND L.listing_id = R.listing_id '
+                '   AND	s.seller_id = R.seller_id ')
 	rs.execute(declined,(buyerID,))
 	print("-------------------")
 	print("-Declined Requests-")
@@ -211,10 +213,12 @@ def seeRequests(con,rs,buyerID):
 	print
 
 	print
-	pending = ('Select t.Title,R.seller_id '
-		    'FROM Textbook t join Listing L using(ISBN), Request R '
-		    'WHERE R.request_state = "Pending" and R.buyer_id = %s and '
-		    '      L.listing_id = R.listing_id')
+	pending = ('SELECT t.Title,s.username '
+		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
+		        ' WHERE R.request_state = "Pending" '
+                '	AND	R.buyer_id = %s '
+		        '   AND L.listing_id = R.listing_id '
+                '   AND	s.seller_id = R.seller_id ')
 	rs.execute(pending,(buyerID,))
 	print("-------------------")
 	print("-Pending Requests-")
@@ -225,10 +229,12 @@ def seeRequests(con,rs,buyerID):
 	print
 
 	print
-	accepted = ('Select t.Title,R.seller_id '
-		    'FROM Textbook t join Listing L using(ISBN), Request R '
-		    'WHERE R.request_state = "Approved" and R.buyer_id = %s and '
-		    '      L.listing_id = R.listing_id')
+	accepted = ('SELECT t.Title,s.username '
+		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
+		        ' WHERE R.request_state = "Approved" '
+                '	AND	R.buyer_id = %s '
+		        '   AND L.listing_id = R.listing_id '
+                '   AND	s.seller_id = R.seller_id ')
 	rs.execute(accepted,(buyerID,))
 	print("-------------------")
 	print("-Approved Requests-")
