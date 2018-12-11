@@ -549,17 +549,17 @@ def sellerMenuDisplay(con, rs, sellerID):
 
 # when a seller selects a '1' form the menu, they will be able to see their textbooks currently on sale
 def seeTextbooksOnSale(con,rs,sellerID):
+    print
     print("These are your textbooks on sale: ")
-    query = '''SELECT t.title as title, t.ISBN as ISBN, t.author as author, l.date_listed as date_listed, l.price as price, l.book_condition as book_condition
+    query = '''SELECT t.title as title, l.date_listed as date_listed, l.price as price, l.book_condition as book_condition
                FROM Listing l JOIN Seller s USING (seller_id) JOIN Textbook t USING (ISBN)
                WHERE seller_id = %s 
 			   AND l.listing_state = 'Public';
             '''
     rs.execute(query, (sellerID,))
     
-    print("Title, ISBN, Author, Date Listed, Price, Condition")
-    for(title, ISBN, author, date_listed, price, book_condition) in rs:
-        print '{}, {}, {}, {}, ${}, {}'.format(title, ISBN, author, date_listed, price, book_condition)
+    for(title, date_listed, price, book_condition) in rs:
+        print 'Title: {}, Date Listed: {}, ${}, Condition: {}'.format(title, date_listed, price, book_condition)
 
 # when  a seller selects '2' from the menu, they will be able to hide a listing from the public
 def hideTextbookListing(con,rs,sellerID):
@@ -574,7 +574,7 @@ def hideTextbookListing(con,rs,sellerID):
     # display all of the seller's current public listings
     print("Listing No., ISBN, CRN, Date Listed, Price, Condition")
     for(listing_id, ISBN, CRN, date_listed, price, book_condition) in rs:
-        print '{}, {}, {}, {}, {}, {}'.format(listing_id, ISBN, CRN, date_listed, price, book_condition)
+        print 'Listing ID: {}, ISBN:{}, CRN: {}, Date Listed: {}, ${}, Condition{}'.format(listing_id, ISBN, CRN, date_listed, price, book_condition)
 
     # ask for the listing id they would like to hide
     listing_id = input('Please enter the listing number you would like to hide: ')
@@ -593,8 +593,6 @@ def addTextbookListing(con, rs,sellerID):
     #TO DO : VALIDATE ISBN 
     crn = input("Please enter the CRN of the course: ")
     #TO DO: validate the CRN
-	
-    #TO DO: validate the date
     price = input("Please enter the price of the textbook: $")
 	
     print("Here are the options for the book condition: ")
@@ -630,24 +628,31 @@ def addTextbookListing(con, rs,sellerID):
 # for their textbook
 def seeTextbookRequests(con,rs,sellerID):
     print("See Textbook Requests")
-    query = '''SELECT r.date_requested as date_requested, r.request_state as request_state, u.name as buyer_name
+    query = '''SELECT r.request_id as rid, r.date_requested as date_requested, r.request_state as request_state, u.name as buyer_name
                FROM Request r JOIN Buyer b USING (buyer_id) JOIN Users u USING(username) 
                WHERE seller_id = %s
 			'''
     rs.execute(query,(sellerID,))
     print("Date Requested, Request State, Buyer Name")
-    for(date_requested, request_state, buyer_name) in rs:
-        print '{} {} {}'.format(date_requested, request_state, buyer_name)
+    for(rid, date_requested, request_state, buyer_name) in rs:
+        print 'Request ID: {}, Date Requested: {} Request State: {} Buyer: {}'.format(rid, date_requested, request_state, buyer_name)
 		
+	print
 	print("1. Approve a Request ")
 	print("2. Return to menu")
-	
 	userInput = raw_input("Enter choice: ")
 	
-	#if userInput == '1' or userInput == '1 ':
-		#approveRequest(con,rs, sellerID)
+	if userInput == '1' or userInput == '1 ':
+	    requestID = input("Enter approved request ID: ")
+			update = '''UPDATE Request
+		            SET request_state = 'Approved'
+					WHERE request_id = %s'''
+		rs.execute(update, (requestID,));
+		con.commit();
+		print("Your email address has been given to the buyer")
+		
 	#elif userInput == '2' or userInput == '2 ':
-	#else:
+	else:
 		#print("Error")
 	
 if __name__ == '__main__':
