@@ -83,9 +83,10 @@ def buyerSellerOptions(con, rs, username):
 			
 		query = '''SELECT s.seller_id
 					FROM Seller s, Users u
-					WHERE u.username = s.username'''
+					WHERE u.username = s.username
+			 AND u.username = %s'''
 					
-		rs.execute(query)
+		rs.execute(query, (username,))
 		
 		for (a) in rs:
 			sellerID = a
@@ -111,9 +112,10 @@ def buyerSellerOptions(con, rs, username):
 		
 		query = '''SELECT b.buyer_id
 					FROM Buyer b, Users u
-					WHERE u.username = b.username'''
+					WHERE u.username = b.username
+			AND u.username = %s'''
 					
-		rs.execute(query)
+		rs.execute(query, (username,))
 		
 		for (a) in rs:
 			buyerID = a
@@ -511,13 +513,6 @@ def requestTextbook(con, rs, buyerID, textbookTitle):
 #Below is seller options, above is buyer options
 #-------------------------------------------------------------------#
 
-# this function will get the seller id and call function to display seller menu
-def sellerOption(con, rs):
-        sellerID = input("Please enter your seller ID: ")
-        sellerMenuDisplay(con, rs, sellerID)
-	#start here on seller stuff, this is right when they enter 1 at the start
-	print
-
 #this function displays the menu for the seller's options
 def sellerMenuDisplay(con, rs, sellerID):
     print
@@ -525,7 +520,7 @@ def sellerMenuDisplay(con, rs, sellerID):
     print("	1. See my textbooks on sale")
     print("	2. Hide a textbook listing")
     print("	3. Add a textbook listing")
-    print("	4. See requests for textbooks")
+    print("	4. See pending requests for textbooks")
     print("	5. Exit")
     sellerMenuChoice = input("Enter an option from the menu (1-5): ")
 
@@ -627,33 +622,50 @@ def addTextbookListing(con, rs,sellerID):
 # this function is called when the seller wants to see the requests from buyers
 # for their textbook
 def seeTextbookRequests(con,rs,sellerID):
-    print("See Textbook Requests")
-    query = '''SELECT r.request_id as rid, r.date_requested as date_requested, r.request_state as request_state, u.name as buyer_name
-               FROM Request r JOIN Buyer b USING (buyer_id) JOIN Users u USING(username) 
-               WHERE seller_id = %s
-			'''
+    print("Pending Textbook Requests")
+    query = '''SELECT r.request_id, r.date_requested, r.request_state, b.username
+               FROM Request r JOIN Buyer b USING (buyer_id) 
+               WHERE r.seller_id = %s
+		AND r.request_state = 'Pending'	'''
     rs.execute(query,(sellerID,))
-    print("Date Requested, Request State, Buyer Name")
     for(rid, date_requested, request_state, buyer_name) in rs:
-        print 'Request ID: {}, Date Requested: {} Request State: {} Buyer: {}'.format(rid, date_requested, request_state, buyer_name)
+        print 'Request ID: {}, Date Requested: {}, {} buyer: {}'.format(rid, date_requested, request_state, buyer_name)
 		
 	print
 	print("1. Approve a Request ")
-	print("2. Return to menu")
+        print("2. Decline a Request")
+	print("3. Return to menu")
 	userInput = raw_input("Enter choice: ")
 	
 	if userInput == '1' or userInput == '1 ':
-	    requestID = input("Enter approved request ID: ")
-			update = '''UPDATE Request
-		            SET request_state = 'Approved'
-					WHERE request_id = %s'''
-		rs.execute(update, (requestID,));
-		con.commit();
-		print("Your email address has been given to the buyer")
-		
-	#elif userInput == '2' or userInput == '2 ':
+	    requestID = input("Enter request ID to approve: ")
+            update = '''UPDATE Request
+        	            SET request_state = 'Approved'
+				WHERE request_id = %s'''
+            rs.execute(update, (requestID,))
+	    con.commit();
+            update2 = '''UPDATE Listing
+                           SET listing_state = 'Hidden'
+                          WHERE listing_id = (SELECT r.listing_id
+                                               FROM  Request r
+                                              WHERE r.request_id = %s)'''
+            rs.execute(update, (requestID,))
+            con.commit();
+	    print("Your email address has been given to the buyer")
+	elif userInput == '2' or userInput == '2 ':
+            requestID = input("Enter request ID to decline: ")
+            update = '''UPDATE Request
+                          SET request_state = 'Declined'
+                         WHERE request_id = %s'''
+            rs.execute(update, (requestID,))
+            con.commit();
+            print("This request has been declined")	
+	elif userInput == '3' or userInput == '3 ':
+            sellerMenuDisplay(con, rs, sellerID)
 	else:
-		#print("Error")
-	
+		print("Error")
+                seeTextbookRequests(con, rs, sellerID)
+
+
 if __name__ == '__main__':
-	main()
+	main()	
