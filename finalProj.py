@@ -3,7 +3,7 @@ import config
 import getpass
 import datetime
 
-
+#set up the connection to the database and call user options
 def main():
 	try: 
 		usr = config.mysql['user']
@@ -21,6 +21,7 @@ def main():
 	except mysql.connector.Error as err:
 		print(err)
 		
+# display user options to get username and password
 def userOptions(con, rs):
 	print
 	print("1. Login")
@@ -30,6 +31,7 @@ def userOptions(con, rs):
 	
 	if usrinput == '2' or usrinput == '2 ':
 		createAccount(con, rs)
+        # if they entered option 1, login
 	elif usrinput == '1' or usrinput == '1 ':
 		username = raw_input("\tEnter username: ")
 		password = getpass.getpass(prompt='\tEnter password: ', stream=None)
@@ -41,6 +43,7 @@ def userOptions(con, rs):
 		for(a,b,c) in rs:
 			user = '{}'.format(a)
 			passd = '{}'.format(b)
+                        # if the username and password are valid, call the buyerSellerOptions menu
 			if username == user and passd == password:
 				validLogin = True
 				print
@@ -60,6 +63,7 @@ def userOptions(con, rs):
 		print
 		userOptions(con,rs)
 
+# the program will ask if they want to continue as either a buyer or a seller of textbooks
 def buyerSellerOptions(con, rs, username):
 	print("Continue as a:")
 	print("  1. Seller")
@@ -67,6 +71,7 @@ def buyerSellerOptions(con, rs, username):
 	print("  3. Exit")
 	userInput = raw_input("Enter your selection: ")
 			
+        # try to find the seller associated with a particular username
 	if userInput == '1' or userInput == '1 ':
 		sellerFound = False;
 		sellerCheck = ('SELECT * FROM Seller ')
@@ -94,8 +99,10 @@ def buyerSellerOptions(con, rs, username):
 		sellerID = str(sellerID)
 		sellerID = sellerID.replace("(", "")
 		sellerID = sellerID.replace(",)", "")
+                # call sellerMenuDisplay to display seller menu options
 		sellerMenuDisplay(con,rs, sellerID)
 		
+        # try to find a buyer associated with a certain username
 	elif userInput == '2' or userInput == '2 ':
 		buyerFound = False;
 		query = ('SELECT * FROM Buyer')
@@ -123,6 +130,7 @@ def buyerSellerOptions(con, rs, username):
 		buyerID = str(buyerID)
 		buyerID = buyerID.replace("(", "")
 		buyerID = buyerID.replace(",)", "")
+                # call buyerMenuDisplay to display buyer menu to the user
 		buyerMenuDisplay(con, rs, buyerID)
 			
 	elif userInput == '3' or userInput == '3 ':
@@ -133,6 +141,7 @@ def buyerSellerOptions(con, rs, username):
 		print
 		buyerSellerOptions(con, rs, username)
 
+# called if the user wants to create an account
 def createAccount(con, rs):
 	print
 	username = raw_input("\tCreate a username (ie. jdoe): ")
@@ -148,6 +157,7 @@ def createAccount(con, rs):
 		usr = '{}'.format(a)
 		if username == usr:
 			isFound = True;
+        #if username is not found, create password and insert the new user into the User table
 	if not isFound:
 		password = getpass.getpass(prompt='\tCreate a password: ', stream=None)
 		name = raw_input("\tEnter name: ")	
@@ -162,6 +172,7 @@ def createAccount(con, rs):
 		print("\tThis username is being used in another account")
 	userOptions(con, rs)
 	
+# menu display for options for buyer
 def buyerMenuDisplay(con, rs, buyerID):
 	print
 	print("Your Menu:")
@@ -197,8 +208,10 @@ def buyerMenuDisplay(con, rs, buyerID):
 		print("\tPlease enter a viable option (1-8)")
 		buyerMenuDisplay(con, rs, buyerID)
 
+# buyer can view all of the requests that they have made for textbooks
 def seeRequests(con,rs,buyerID):
 	print
+        # find the declined requests
 	declined = ('SELECT t.Title,s.username '
 		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
 		        ' WHERE R.request_state = "Declined" '
@@ -215,6 +228,7 @@ def seeRequests(con,rs,buyerID):
 	print
 
 	print
+        #find the pending requests
 	pending = ('SELECT t.Title,s.username '
 		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
 		        ' WHERE R.request_state = "Pending" '
@@ -231,6 +245,7 @@ def seeRequests(con,rs,buyerID):
 	print
 
 	print
+        # find the accepted requests
 	accepted = ('SELECT t.Title,s.username '
 		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
 		        ' WHERE R.request_state = "Approved" '
@@ -241,6 +256,7 @@ def seeRequests(con,rs,buyerID):
 	print("-------------------")
 	print("-Approved Requests-")
 	print("-------------------")
+        # if a request has been accepted, the buyer will be able to see the seller's contact information
 	for (a,b) in rs:
 		result = 'Textbook: {}, Seller Email: {}@zagmail.gonzaga.edu'.format(a,b)
 		print(result)
@@ -249,6 +265,7 @@ def seeRequests(con,rs,buyerID):
 	buyerMenuDisplay(con,rs,buyerID)
 
 def txtNoListing(con,rs,buyerID):
+        #find the textbooks that do not have any listings 
 	outerQ = ('SELECT T.title, T.ISBN '
 		  'FROM Textbook T LEFT JOIN Listing L USING (ISBN) '
 		  'WHERE L.ISBN is NULL')
@@ -260,6 +277,7 @@ def txtNoListing(con,rs,buyerID):
 		print(result)
 	buyerMenuDisplay(con,rs,buyerID)
 	
+# called when the buyer wants to look for a textbook
 def searchTextbooks(con, rs, buyerID):
 	print
 	print("Search Textbooks")
@@ -285,6 +303,7 @@ def searchTextbooks(con, rs, buyerID):
 	print
 	buyerMenuDisplay(con,rs, buyerID)
 	
+# called when the buyer wants to look for a particular class at Gonzaga
 def searchClasses(con, rs, buyerID):
 	print
 	isThere = False
@@ -313,6 +332,7 @@ def searchClasses(con, rs, buyerID):
 	
 	buyerMenuDisplay(con,rs, buyerID)
 
+# look for required textbooks for a particular course
 def searchClassTextbooks(con, rs, buyerID):
 	print
 	isThere = False
@@ -324,6 +344,7 @@ def searchClassTextbooks(con, rs, buyerID):
 		searchClasses(con,rs,buyerID)
 	print
 	
+       # search for all textbooks associated with a particular course CRN
 	searchC = ('SELECT ct.CRN, c.department, c.course_number, c.course_section, c.instructor, t.title, t.ISBN '
 	           'FROM CourseTextbook ct, Course c, Textbook t '
 			   'WHERE c.CRN = %s '
