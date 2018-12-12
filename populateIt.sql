@@ -131,7 +131,10 @@ INSERT INTO Textbook VALUES
 	('4567890123456', 'Society of Ancient Israel','Isaiah Heyt',4 , 'Hachette Books', 2009,90.00 ),
 	('5678901234567', 'Inside of Computers','Colin Cumberbatch',1 , 'Highwire',2001 ,100.00 ),
 	('6789012345678', 'Mechanics of Materials','Jason Match',2 , 'Hackett Book',2004 ,210.00 ),
-	('7890123456789', 'For Whom the Bell Tolls','Hyf Shweinstizer',4 , 'HarperCollins',2010 ,40.00);
+	('7890123456789', 'For Whom the Bell Tolls','Hyf Shweinstizer',4 , 'HarperCollins',2010 ,40.00),
+        ('9781891136375','Rhetoric in Civic Life','Palczewski',2,'Strata Publishing, Inc.',2012,15.00),
+        ('9780321927040', 'Human Anatomy & Physiology', 'Elaine Marieb',10,'Pearson Education',2015,67.99),
+        ('9780134093413','Campbell Biology','Lisa Urry',11,'Pearson Education',2016,171.49);
 
 INSERT INTO Course VALUES
 	(11485, 'CPSC', '321', '01', 'Shawn Bowers', 'Fall', 2018),
@@ -145,7 +148,8 @@ INSERT INTO Course VALUES
 	(35271, 'SOCI', '432', '07', 'Niel Grom', 'Spring', 2019),
 	(96382, 'CPEN', '121', '03', 'Al Adams', 'Spring', 2019),
 	(45673, 'MECH', '163', '01', 'Seth OReilly', 'Spring', 2019),
-	(43561, 'ENGL', '234', '01', 'Jeff Master', 'Fall', 2018);
+	(43561, 'ENGL', '234', '01', 'Jeff Master', 'Fall', 2018),
+        (10939, 'COMM', '100', '01', 'Tracy Struble','Fall',2018);
 
 	
 INSERT INTO CourseTextbook VALUES
@@ -160,7 +164,8 @@ INSERT INTO CourseTextbook VALUES
 	('4567890123456', 35271),
 	('5678901234567', 96382),
 	('6789012345678', 45673),
-	('7890123456789', 43561);
+	('7890123456789', 43561),
+        ('9781891136375', 10939);
 
 INSERT INTO Listing VALUES 
 	(1, 5, '9781234567891', 11014, '2018-05-09', 50, 'Good', 'Public'),
