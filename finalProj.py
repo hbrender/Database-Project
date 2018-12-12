@@ -667,14 +667,13 @@ def seeTextbookRequests(con,rs,sellerID):
     rs.execute(query,(sellerID,))
     for(rid, date_requested, request_state, buyer_name) in rs:
         print 'Request ID: {}, Date Requested: {}, {} buyer: {}'.format(rid, date_requested, request_state, buyer_name)
-		
 	print
-	print("1. Approve a Request ")
-        print("2. Decline a Request")
-	print("3. Return to menu")
-	userInput = raw_input("Enter choice: ")
+    print("1. Approve a Request ")
+    print("2. Decline a Request")
+    print("3. Return to menu")
+    userInput = raw_input("Enter choice: ")
 	
-	if userInput == '1' or userInput == '1 ':
+    if userInput == '1' or userInput == '1 ':
 	    requestID = input("Enter request ID to approve: ")
             update = '''UPDATE Request
         	            SET request_state = 'Approved'
@@ -686,10 +685,10 @@ def seeTextbookRequests(con,rs,sellerID):
                           WHERE listing_id = (SELECT r.listing_id
                                                FROM  Request r
                                               WHERE r.request_id = %s)'''
-            rs.execute(update, (requestID,))
+            rs.execute(update2, (requestID,))
             con.commit();
 	    print("Your email address has been given to the buyer")
-	elif userInput == '2' or userInput == '2 ':
+    elif userInput == '2' or userInput == '2 ':
             requestID = input("Enter request ID to decline: ")
             update = '''UPDATE Request
                           SET request_state = 'Declined'
@@ -697,11 +696,11 @@ def seeTextbookRequests(con,rs,sellerID):
             rs.execute(update, (requestID,))
             con.commit();
             print("This request has been declined")	
-	elif userInput == '3' or userInput == '3 ':
+    elif userInput == '3' or userInput == '3 ':
             sellerMenuDisplay(con, rs, sellerID)
-	else:
-		print("Error")
-                seeTextbookRequests(con, rs, sellerID)
+    else:
+	    print("Error")
+            seeTextbookRequests(con, rs, sellerID)
 
 
 if __name__ == '__main__':
