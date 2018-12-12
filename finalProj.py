@@ -362,6 +362,7 @@ def searchClassTextbooks(con, rs, buyerID):
 		print("There are currently no textbooks listed for that class")
 	buyerMenuDisplay(con, rs, buyerID)	
 
+# will search for listings that contain a particular textbook title
 def searchListings(con, rs, buyerID):
 	print
 	isThere = False
@@ -388,7 +389,8 @@ def searchListings(con, rs, buyerID):
 		print("You have entered a book that doesn't have any listings")
 		buyerMenuDisplay(con,rs,buyerID)
 	searchListingsMenu(con, rs, textbookTitle, buyerID)
-	
+
+# is called after the user has already searched for listings	
 def searchListingsMenu(con, rs, textbookTitle, buyerID):
 	print
 	print("Here are some options for seller results: ")
@@ -542,7 +544,8 @@ def sellerMenuDisplay(con, rs, sellerID):
     print("	2. Hide a textbook listing")
     print("	3. Add a textbook listing")
     print("	4. See pending requests for textbooks")
-    print("	5. Exit")
+    print("     5. See number of requests for each textbook listing")
+    print("	6. Exit")
     sellerMenuChoice = input("Enter an option from the menu (1-5): ")
 
     if sellerMenuChoice == 1:
@@ -558,10 +561,23 @@ def sellerMenuDisplay(con, rs, sellerID):
          seeTextbookRequests(con, rs, sellerID)
          sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 5:
+         seeRequestsPerTextbook(con, rs, sellerID)
+         sellerMenuDisplay(con, rs, sellerID)
+    elif sellerMenuChoice == 6:
         exit()
     else:
         print("\nPlease enter a viable option (1-5)")
         sellerMenuDisplay(con, rs, sellerID)
+
+def seeRequestsPerTextbook(con, rs, sellerID):
+     print("See number of requests per textbook")
+     query = '''SELECT t.title, t.ISBN, COUNT(*) as requests
+                FROM Request r JOIN Listing l USING (listing_id) JOIN Textbook t USING (ISBN)
+                WHERE l.seller_id = %s 
+                GROUP BY t.ISBN;'''
+     rs.execute(query, (sellerID,))
+     for(title, ISBN, requests) in rs:
+         print 'Title: {}, ISBN: {}, Requests: {}'.format(title, ISBN, requests)
 
 # when a seller selects a '1' form the menu, they will be able to see their textbooks currently on sale
 def seeTextbooksOnSale(con,rs,sellerID):
