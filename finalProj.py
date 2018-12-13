@@ -24,7 +24,9 @@ def main():
 # display user options to get username and password
 def userOptions(con, rs):
 	print
-	print("1. Login")
+        print("--------------------------------------------------------------")
+	print
+        print("1. Login")
 	print("2. Create Account")
 	print("3. Exit")
 	usrinput = raw_input("Enter your selection: ")
@@ -48,7 +50,6 @@ def userOptions(con, rs):
 				validLogin = True
 				print
 				print("Hello, " + c)
-				print
 				buyerSellerOptions(con, rs, username)
 
 		if not validLogin:
@@ -60,12 +61,14 @@ def userOptions(con, rs):
 	else:
 		print
 		print("\tError: Invalid input")
-		print
 		userOptions(con,rs)
 
 # the program will ask if they want to continue as either a buyer or a seller of textbooks
-def buyerSellerOptions(con, rs, username):
-	print("Continue as a:")
+def buyerSellerOptions(con, rs, username):	
+	print
+        print("--------------------------------------------------------------")
+        print
+        print("Continue as a:")
 	print("  1. Seller")
 	print("  2. Buyer")
 	print("  3. Exit")
@@ -173,16 +176,18 @@ def createAccount(con, rs):
 	userOptions(con, rs)
 	
 # menu display for options for buyer
-def buyerMenuDisplay(con, rs, buyerID):
+def buyerMenuDisplay(con, rs, buyerID):	
 	print
+        print("--------------------------------------------------------------")
+        print
 	print("Your Menu:")
 	print("  1. Search Textbooks")
 	print("  2. Search Classes")
-	print("	 3. Search Class Textbooks")
-	print("	 4. Search Textbook Listings")
+	print("  3. Search Class Textbooks")
+	print("  4. Search Textbook Listings")
 	print("  5. See your requests " )
-	print("  6. see textbooks that don't have a listing")
-	print("	 7. Exit")
+	print("  6. See textbooks that don't have a listing")
+	print("  7. Exit")
 	try:
 		menuChoice = int(raw_input("Enter your choice: "))
 	except ValueError:
@@ -210,14 +215,16 @@ def buyerMenuDisplay(con, rs, buyerID):
 
 # buyer can view all of the requests that they have made for textbooks
 def seeRequests(con,rs,buyerID):
+	print 
+        print("--------------------------------------------------------------")
 	print
         # find the declined requests
 	declined = ('SELECT t.Title,s.username '
-		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
-		        ' WHERE R.request_state = "Declined" '
-                '	AND	R.buyer_id = %s '
-		        '   AND L.listing_id = R.listing_id '
-                '   AND	s.seller_id = R.seller_id ')
+		    '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
+	            ' WHERE R.request_state = "Declined" '
+                    '   AND R.buyer_id = %s '
+		    '   AND L.listing_id = R.listing_id '
+                    '   AND s.seller_id = R.seller_id ')
 	rs.execute(declined,(buyerID,))
 	print("-------------------")
 	print("-Declined Requests-")
@@ -265,6 +272,9 @@ def seeRequests(con,rs,buyerID):
 	buyerMenuDisplay(con,rs,buyerID)
 
 def txtNoListing(con,rs,buyerID):
+        print
+        print("--------------------------------------------------------------")
+        print
         #find the textbooks that do not have any listings 
 	outerQ = ('SELECT T.title, T.ISBN '
 		  'FROM Textbook T LEFT JOIN Listing L USING (ISBN) '
@@ -279,8 +289,10 @@ def txtNoListing(con,rs,buyerID):
 	
 # called when the buyer wants to look for a textbook
 def searchTextbooks(con, rs, buyerID):
+	print 
+        print("--------------------------------------------------------------")
 	print
-	print("Search Textbooks")
+        print("Search Textbooks")
 	print("Please enter the following information")
 	try:
 		ISBN = int(raw_input("Enter the ISBN 13 number: "))
@@ -305,8 +317,10 @@ def searchTextbooks(con, rs, buyerID):
 	
 # called when the buyer wants to look for a particular class at Gonzaga
 def searchClasses(con, rs, buyerID):
+	print 
+        print("--------------------------------------------------------------")
 	print
-	isThere = False
+        isThere = False
 	print("Search class")
 	try:
 		crn = int(raw_input("CRN: "))
@@ -333,9 +347,11 @@ def searchClasses(con, rs, buyerID):
 	buyerMenuDisplay(con,rs, buyerID)
 
 # look for required textbooks for a particular course
-def searchClassTextbooks(con, rs, buyerID):
+def searchClassTextbooks(con, rs, buyerID):	
+	print 
+        print("--------------------------------------------------------------")
 	print
-	isThere = False
+        isThere = False
 	print("Search Class Textbooks")
 	try:
 		crn = int(raw_input("CRN: "))
@@ -364,8 +380,10 @@ def searchClassTextbooks(con, rs, buyerID):
 
 # will search for listings that contain a particular textbook title
 def searchListings(con, rs, buyerID):
+	print 
+        print("--------------------------------------------------------------")
 	print
-	isThere = False
+        isThere = False
 	print("Search Textbook Listings")
 	print("Please enter the following information")
 	textbookTitle = raw_input("Enter the textbook title: ")
@@ -391,16 +409,18 @@ def searchListings(con, rs, buyerID):
 	searchListingsMenu(con, rs, textbookTitle, buyerID)
 
 # is called after the user has already searched for listings	
-def searchListingsMenu(con, rs, textbookTitle, buyerID):
+def searchListingsMenu(con, rs, textbookTitle, buyerID):	
+	print 
+        print("--------------------------------------------------------------")
 	print
 	print("Here are some options for seller results: ")
-	print("\t1. Sort the sellers from lowest to highest price")
-	print("\t2. Sort the sellers from highest to lowest price")
-	print("\t3. Request a textbook from a seller")
-	print("\t4. Find textbook within a price range")
-	print("\t5. Find listings for another title")
-	print("\t6. Find the lowest priced book")
-	print("\t7. Exit")
+	print("  1. Sort the sellers from lowest to highest price")
+	print("  2. Sort the sellers from highest to lowest price")
+	print("  3. Request a textbook from a seller")
+	print("  4. Find textbook within a price range")
+	print("  5. Find listings for another title")
+	print("  6. Find the lowest priced book")
+	print("  7. Exit")
 	print
 	try:
 		userChoice = int(raw_input("Enter what option you want: "))
@@ -481,25 +501,15 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 
 	searchListingsMenu(con,rs,textbookTitle, buyerID)
 	
-def requestTextbook(con, rs, buyerID, textbookTitle):
+def requestTextbook(con, rs, buyerID, textbookTitle):	
+	print 
+        print("--------------------------------------------------------------")
 	print
         listingID = raw_input("Enter listing number you wish to request: ")
 	date = datetime.datetime.now().strftime("%y-%m-%d")
 	
-	#findListing = '''SELECT l.listing_id FROM Listing l'''
-	#rs.execute(findListing)
-	#isFound = False
-	#for(a) in rs:
-	#    list_id = '{}'.format(a)
-    #        if list_id == listingID:
-    #            isFound = True
-	#if not isFound:
-	#	print("\nListing does not exist")
-	#	requestTextbook(con,rs,buyerID, textbookTitle)
-	
 	findListing = '''SELECT l.listing_id, l.seller_id FROM Listing l
 						WHERE l.listing_id = %s'''
-
         rs.execute(findListing, (listingID,))
 	
 	row = rs.fetchone()
@@ -538,14 +548,16 @@ def requestTextbook(con, rs, buyerID, textbookTitle):
 
 #this function displays the menu for the seller's options
 def sellerMenuDisplay(con, rs, sellerID):
+    print 
+    print("--------------------------------------------------------------")
     print
     print("Your Menu:")
-    print("	1. See my textbooks on sale")
-    print("	2. Hide a textbook listing")
-    print("	3. Add a textbook listing")
-    print("	4. See pending requests for textbooks")
-    print("     5. See number of requests for each textbook listing")
-    print("	6. Exit")
+    print("   1. See my textbooks on sale")
+    print("   2. Hide a textbook listing")
+    print("   3. Add a textbook listing")
+    print("   4. See pending requests for textbooks")
+    print("   5. See number of requests for each textbook listing")
+    print("   6. Exit")
     sellerMenuChoice = input("Enter an option from the menu (1-5): ")
 
     if sellerMenuChoice == 1:
@@ -569,18 +581,23 @@ def sellerMenuDisplay(con, rs, sellerID):
         print("\nPlease enter a viable option (1-5)")
         sellerMenuDisplay(con, rs, sellerID)
 
-def seeRequestsPerTextbook(con, rs, sellerID):
-     print("See number of requests per textbook")
-     query = '''SELECT t.title, t.ISBN, COUNT(*) as requests
+def seeRequestsPerTextbook(con, rs, sellerID): 
+    print 
+    print("--------------------------------------------------------------")
+    print
+    print("See number of requests per textbook")
+    query = '''SELECT t.title, t.ISBN, COUNT(*) as requests
                 FROM Request r JOIN Listing l USING (listing_id) JOIN Textbook t USING (ISBN)
                 WHERE l.seller_id = %s 
                 GROUP BY t.ISBN;'''
-     rs.execute(query, (sellerID,))
-     for(title, ISBN, requests) in rs:
-         print 'Title: {}, ISBN: {}, Requests: {}'.format(title, ISBN, requests)
+    rs.execute(query, (sellerID,))
+    for(title, ISBN, requests) in rs:
+        print 'Title: {}, ISBN: {}, Requests: {}'.format(title, ISBN, requests)
 
 # when a seller selects a '1' form the menu, they will be able to see their textbooks currently on sale
-def seeTextbooksOnSale(con,rs,sellerID):
+def seeTextbooksOnSale(con,rs,sellerID): 
+    print 
+    print("--------------------------------------------------------------")
     print
     print("These are your textbooks on sale: ")
     query = '''SELECT t.title as title, l.date_listed as date_listed, l.price as price, l.book_condition as book_condition
@@ -594,7 +611,10 @@ def seeTextbooksOnSale(con,rs,sellerID):
         print 'Title: {}, Date Listed: {}, ${}, Condition: {}'.format(title, date_listed, price, book_condition)
 
 # when  a seller selects '2' from the menu, they will be able to hide a listing from the public
-def hideTextbookListing(con,rs,sellerID):
+def hideTextbookListing(con,rs,sellerID): 
+    print 
+    print("--------------------------------------------------------------")
+    print
     print("Hide a Textbook Listing")
     print("Here are your current public listings:")
     query = '''SELECT listing_id, ISBN, CRN, date_listed, price, book_condition
@@ -604,11 +624,12 @@ def hideTextbookListing(con,rs,sellerID):
     rs.execute(query, (sellerID,))
     
     # display all of the seller's current public listings
-    print("Listing No., ISBN, CRN, Date Listed, Price, Condition")
+    print
     for(listing_id, ISBN, CRN, date_listed, price, book_condition) in rs:
-        print 'Listing ID: {}, ISBN:{}, CRN: {}, Date Listed: {}, ${}, Condition{}'.format(listing_id, ISBN, CRN, date_listed, price, book_condition)
+        print 'Listing ID: {}, ISBN:{}, CRN: {}, Date Listed: {}, ${}, Condition: {}'.format(listing_id, ISBN, CRN, date_listed, price, book_condition)
 
     # ask for the listing id they would like to hide
+    print
     listing_id = input('Please enter the listing number you would like to hide: ')
     update = '''UPDATE Listing
                 SET listing_state = 'Hidden'
@@ -617,22 +638,24 @@ def hideTextbookListing(con,rs,sellerID):
     rs.execute(update,(sellerID,listing_id))
     #save the changes to the db
     con.commit()
+    print
     print("Your listings have been updated.")
 
-def addTextbookListing(con, rs,sellerID):
+def addTextbookListing(con, rs,sellerID): 
+    print 
+    print("--------------------------------------------------------------")
+    print
     print("Add a textbook listing")
     isbn = input("Please enter the ISBN of the textbook you would like to add: ")
-    #TO DO : VALIDATE ISBN 
     crn = input("Please enter the CRN of the course: ")
-    #TO DO: validate the CRN
     price = input("Please enter the price of the textbook: $")
 	
     print("Here are the options for the book condition: ")
-    print("1. Poor")
-    print("2. Fair")
-    print("3. Good")
-    print("4. Very Good")
-    print("5. Like New")
+    print("  1. Poor")
+    print("  2. Fair")
+    print("  3. Good")
+    print("  4. Very Good")
+    print("  5. Like New")
 	
     date_listed = datetime.datetime.now().strftime("%y-%m-%d")
     book_cond = ''
@@ -658,7 +681,10 @@ def addTextbookListing(con, rs,sellerID):
 
 # this function is called when the seller wants to see the requests from buyers
 # for their textbook
-def seeTextbookRequests(con,rs,sellerID):
+def seeTextbookRequests(con,rs,sellerID): 
+    print 
+    print("--------------------------------------------------------------")
+    print
     print("Pending Textbook Requests")
     query = '''SELECT r.request_id, r.date_requested, r.request_state, b.username
                FROM Request r JOIN Buyer b USING (buyer_id) 
@@ -667,7 +693,7 @@ def seeTextbookRequests(con,rs,sellerID):
     rs.execute(query,(sellerID,))
     for(rid, date_requested, request_state, buyer_name) in rs:
         print 'Request ID: {}, Date Requested: {}, {} buyer: {}'.format(rid, date_requested, request_state, buyer_name)
-	print
+    print
     print("1. Approve a Request ")
     print("2. Decline a Request")
     print("3. Return to menu")
@@ -704,4 +730,4 @@ def seeTextbookRequests(con,rs,sellerID):
 
 
 if __name__ == '__main__':
-	main()	
+	main()
