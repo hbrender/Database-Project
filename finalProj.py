@@ -219,7 +219,7 @@ def seeRequests(con,rs,buyerID):
         print("--------------------------------------------------------------")
 	print
         # find the declined requests
-	declined = ('SELECT t.Title,s.username '
+	declined = ('SELECT R.listing_id, t.Title,s.username '
 		    '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
 	            ' WHERE R.request_state = "Declined" '
                     '   AND R.buyer_id = %s '
@@ -229,14 +229,14 @@ def seeRequests(con,rs,buyerID):
 	print("-------------------")
 	print("-Declined Requests-")
 	print("-------------------")
-	for (a,b) in rs:
-		result = 'Textbook: {}, Seller: {}'.format(a,b)
+	for (a,b,c) in rs:
+		result = 'Listing ID: {}, Textbook: {}, Seller: {}'.format(a,b,c)
 		print(result)
 	print
 
 	print
         #find the pending requests
-	pending = ('SELECT t.Title,s.username '
+	pending = ('SELECT L.listing_id, t.Title,s.username '
 		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
 		        ' WHERE R.request_state = "Pending" '
                 '	AND	R.buyer_id = %s '
@@ -246,14 +246,14 @@ def seeRequests(con,rs,buyerID):
 	print("-------------------")
 	print("-Pending Requests-")
 	print("-------------------")
-	for (a,b) in rs:
-		result = 'Textbook: {}, Seller: {}'.format(a,b)
+	for (a,b,c) in rs:
+		result = 'Listing ID: {}, Textbook: {}, Seller: {}'.format(a,b,c)
 		print(result)
 	print
 
 	print
         # find the accepted requests
-	accepted = ('SELECT t.Title,s.username '
+	accepted = ('SELECT L.listing_id, t.Title,s.username '
 		        '  FROM Textbook t JOIN Listing L using(ISBN), Request R, Seller s'
 		        ' WHERE R.request_state = "Approved" '
                 '	AND	R.buyer_id = %s '
@@ -264,8 +264,8 @@ def seeRequests(con,rs,buyerID):
 	print("-Approved Requests-")
 	print("-------------------")
         # if a request has been accepted, the buyer will be able to see the seller's contact information
-	for (a,b) in rs:
-		result = 'Textbook: {}, Seller Email: {}@zagmail.gonzaga.edu'.format(a,b)
+	for (a,b,c) in rs:
+		result = 'Listing ID: {}, Textbook: {}, Seller Email: {}@zagmail.gonzaga.edu'.format(a,b,c)
 		print(result)
 	print
 
@@ -469,7 +469,7 @@ def searchListingsMenu(con, rs, textbookTitle, buyerID):
 					  'WHERE S.seller_id = L.seller_id AND L.ISBN = T.ISBN '
 					   "AND L.listing_state = 'Public' "
 					  'and u.username = S.username '
-					  'and T.title = %s AND L.price > %s AND L.Price < %s')
+					  'and T.title = %s AND L.price >= %s AND L.Price <= %s')
 					  
 		rs.execute(SearchSell, (textbookTitle, lowPrice, highPrice))
 		
@@ -557,7 +557,8 @@ def sellerMenuDisplay(con, rs, sellerID):
     print("   3. Add a textbook listing")
     print("   4. See pending requests for textbooks")
     print("   5. See number of requests for each textbook listing")
-    print("   6. Exit")
+    print("   6. See textbooks with most requests")
+    print("   7. Exit")
     sellerMenuChoice = input("Enter an option from the menu (1-5): ")
 
     if sellerMenuChoice == 1:
@@ -576,18 +577,42 @@ def sellerMenuDisplay(con, rs, sellerID):
          seeRequestsPerTextbook(con, rs, sellerID)
          sellerMenuDisplay(con, rs, sellerID)
     elif sellerMenuChoice == 6:
+	 seeTextMostReq(con,rs,sellerID)
+         sellerMenuDisplay(con,rs,sellerID)
+    elif sellerMenuChoice == 7:
         exit()
     else:
         print("\nPlease enter a viable option (1-5)")
         sellerMenuDisplay(con, rs, sellerID)
+
+def seeTextMostReq(con,rs,sellerID):
+    print 
+    print("--------------------------------------------------------------")
+    print
+    print("See textbooks with the most requests")
+    query = '''SELECT t.title, COUNT(*)
+		FROM Request r JOIN Listing l USING(listing_id)
+		JOIN Textbook t USING(ISBN)
+		WHERE l.seller_id = %s
+		GROUP BY t.ISBN
+		HAVING COUNT(*) >= ALL (SELECT COUNT(*)
+					FROM Request r JOIN Listing l USING(listing_id)
+                                        JOIN Textbook t USING(ISBN)
+					WHERE r.seller_id = %s
+                                        GROUP BY t.ISBN)'''
+
+   
+    rs.execute(query, (sellerID,sellerID)) 
+    for(title, requests) in rs:
+        print 'Title: {}, Requests: {}'.format(title, requests)
 
 def seeRequestsPerTextbook(con, rs, sellerID): 
     print 
     print("--------------------------------------------------------------")
     print
     print("See number of requests per textbook")
-    query = '''SELECT t.title, t.ISBN, COUNT(*) as requests
-                FROM Request r JOIN Listing l USING (listing_id) JOIN Textbook t USING (ISBN)
+    query = '''SELECT t.title, t.ISBN, COUNT(r.listing_id) as requests
+                FROM Request r RIGHT JOIN Listing l USING (listing_id) JOIN Textbook t USING (ISBN)
                 WHERE l.seller_id = %s 
                 GROUP BY t.ISBN;'''
     rs.execute(query, (sellerID,))
